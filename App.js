@@ -1,20 +1,51 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+// App.js
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
 
-export default function App() {
+// Importing Components
+import Login from "./src/Components/Login";
+import CapacityData from "./src/Components/CapacityData";
+import Clemons from "./src/Components/Clemons"; // Clemons Library detailed page
+import Shannon from "./src/Components/Shannon"; // Shannon Library detailed page
+
+// Initialize Stack Navigator
+const Stack = createStackNavigator();
+
+function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login">
+        {/* Login Screen */}
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{ headerShown: false }} // Hide header for login screen
+        />
+
+        {/* Capacity Data Screen */}
+        <Stack.Screen
+          name="CapacityData"
+          component={CapacityData}
+          options={{ title: "Capacity Data" }}
+        />
+
+        {/* Clemons Library Detailed Page */}
+        <Stack.Screen
+          name="Clemons"
+          component={Clemons}
+          options={{ title: "Clemons Library" }}
+        />
+
+        {/* Shannon Library Detailed Page */}
+        <Stack.Screen
+          name="Shannon"
+          component={Shannon}
+          options={{ title: "Shannon Library" }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;

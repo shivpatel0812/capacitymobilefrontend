@@ -2,6 +2,12 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
 import { ProgressBar } from "react-native-paper";
 
+import Shannon1 from "../../assets/clem1.jpg";
+import Shannon2 from "../../assets/shannon2.jpg";
+import Shannon3 from "../../assets/Shannon3.jpg";
+import Shannon4 from "../../assets/Shannon4.jpeg";
+import Shannon5 from "../../assets/Shannon5.jpeg";
+
 export default function Shannon() {
   const [floors, setFloors] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -20,9 +26,12 @@ export default function Shannon() {
     const fetchFloorData = async () => {
       try {
         const response = await fetch(
-          "http://192.168.115.153:3001/api/latest-capacities"
+          "http://172.16.102.44:3001/api/latest-capacities"
         );
+
         const result = await response.json();
+
+        console.log("API Response:", result);
 
         if (
           result &&
@@ -32,22 +41,22 @@ export default function Shannon() {
           result.data.shannon.capacity.floor_results
         ) {
           const floorResults = result.data.shannon.capacity.floor_results;
-          const maxCapacityPerFloor = 100;
+          console.log("Parsed Floor Results:", floorResults);
 
+          const maxCapacityPerFloor = 100;
           const floorImageMap = {
-            floor_1: "https://example.com/shannon2.jpg",
-            floor_2: "https://example.com/shannon4.jpg",
-            floor_3: "https://example.com/shannon5.jpg",
-            floor_4: "https://example.com/shannon6.jpg",
-            floor_5: "https://example.com/shannon7.jpg",
+            floor_1: Shannon1,
+            floor_2: Shannon2,
+            floor_3: Shannon3,
+            floor_4: Shannon4,
+            floor_5: Shannon5,
           };
 
           const formattedFloors = Object.entries(floorResults).map(
             ([floorKey, capacity]) => {
               const floorNumber = floorKey.split("_")[1]; // "floor_1" -> "1"
               const floorName = `Floor ${floorNumber}`;
-              const floorImage =
-                floorImageMap[floorKey] || "https://via.placeholder.com/80";
+              const floorImage = floorImageMap[floorKey] || Shannon1;
 
               // Force capacity to be an integer, then clamp between 0 and maxCapacityPerFloor
               const capacityAsInt = parseInt(capacity, 10) || 0;
@@ -66,13 +75,14 @@ export default function Shannon() {
             }
           );
 
+          console.log("Formatted Floors:", formattedFloors);
           setFloors(formattedFloors);
         } else {
           setErrorMessage("Shannon floor results not found in API response.");
         }
       } catch (error) {
         setErrorMessage("Error fetching Shannon data.");
-        console.error(error);
+        console.error("Fetch Error:", error);
       }
     };
 
@@ -100,7 +110,7 @@ export default function Shannon() {
       ) : (
         floors.map((floor) => (
           <View key={floor.id} style={styles.card}>
-            <Image source={{ uri: floor.image }} style={styles.image} />
+            <Image source={floor.image} style={styles.image} />
             <View style={styles.infoContainer}>
               <Text style={styles.name}>{floor.name}</Text>
               <Text style={styles.capacityText}>

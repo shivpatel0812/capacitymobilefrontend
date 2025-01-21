@@ -3,38 +3,59 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
-// Importing Components
 import Login from "./src/Components/Login";
 import CapacityData from "./src/Components/CapacityData";
-import Clemons from "./src/Components/Clemons"; // Clemons Library detailed page
-import Shannon from "./src/Components/Shannon"; // Shannon Library detailed page
+import Clemons from "./src/Components/Clemons";
+import Shannon from "./src/Components/Shannon";
 
-// Initialize Stack Navigator
 const Stack = createStackNavigator();
 
 function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
-        {/* Login Screen */}
+        {/* Login Screen (no header) */}
         <Stack.Screen
           name="Login"
           component={Login}
-          options={{ headerShown: false }} // Hide header for login screen
+          options={{ headerShown: false }}
         />
 
         {/* Capacity Data Screen */}
         <Stack.Screen
           name="CapacityData"
           component={CapacityData}
-          options={{ title: "Capacity Data" }}
+          options={{
+            headerTitle: "",
+            headerTransparent: true,
+            headerTintColor: "#fff",
+
+            // Label on the back button
+            headerBackTitle: "Login",
+            headerBackTitleVisible: true,
+
+            // Move arrow up by 10px (adjust as you like)
+            headerLeftContainerStyle: {
+              marginTop: 50,
+            },
+          }}
         />
 
         {/* Clemons Library Detailed Page */}
         <Stack.Screen
           name="Clemons"
           component={Clemons}
-          options={{ title: "Clemons Library" }}
+          options={{
+            headerTitle: "",
+            headerTransparent: true,
+            headerTintColor: "#fff",
+            headerBackTitleVisible: false,
+
+            // If you also want to move the arrow for Clemons screen:
+            headerLeftContainerStyle: {
+              marginTop: -10,
+            },
+          }}
         />
 
         {/* Shannon Library Detailed Page */}

@@ -13,7 +13,7 @@ import { ProgressBar } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 
-// Existing images
+// Images for locations
 import ClemonsImage from "../../assets/Clemons-location.png";
 import ShannonImage from "../../assets/2f984490-663c-4515-b7e0-03acbfb328f2.sized-1000x1000.jpg";
 import RiceHallImage from "../../assets/ricehall.png";
@@ -21,39 +21,60 @@ import AfcImage from "../../assets/Fitness Facilities.jpg"; // Placeholder for A
 
 function CapacityData() {
   const [capacities, setCapacities] = useState({});
+  const [errorMessage, setErrorMessage] = useState("");
   const navigation = useNavigation();
 
   useEffect(() => {
     const fetchLatestCapacities = async () => {
       try {
-        const response = await fetch(
-          "http://172.16.102.44:3001/api/latest-capacities"
-        );
-        const data = await response.json();
+        console.log("Fetching latest capacities...");
+        const apiUrl =
+          "https://ykfoxx9h9a.execute-api.us-east-2.amazonaws.com/reactdeploy/nodemongo";
 
+        const response = await fetch(apiUrl, { method: "GET" });
+        console.log("API Response Status:", response.status);
+
+        if (!response.ok) {
+          throw new Error(
+            `HTTP Error: ${response.status} ${response.statusText}`
+          );
+        }
+
+        // Parse the API response
+        const parsed = await response.json();
+        console.log("Raw API Response:", parsed);
+
+        // Use the actual field names from your API response
+        const { clemons_results, shannon_results } = parsed;
+
+        // Build the capacities object based on the API response
         const formattedCapacities = {
-          "Rice Hall": {
-            current: data.data.ricehall?.current_capacity || 0,
-            total: 400,
-          },
           "Clemons Library": {
-            current: data.data.clemonslibrary?.capacity?.final_capacity || 0,
+            current: clemons_results?.capacity?.final_capacity || 0,
             total: 2000,
           },
           "Shannon Library": {
-            current: data.data.shannon?.capacity?.final_capacity || 0,
+            current: shannon_results?.final_capacity || 0,
             total: 2000,
           },
+          "Rice Hall": {
+            current: 0, // No data for Rice Hall in the API response
+            total: 400,
+          },
           "AFC Gym": {
-            current: data.data.afc?.capacity?.final_capacity || 0,
+            current: 0, // No data for AFC Gym in the API response
             total: 1000,
           },
         };
+
+        console.log("Formatted Capacities:", formattedCapacities);
         setCapacities(formattedCapacities);
       } catch (error) {
+        setErrorMessage("Failed to fetch capacities.");
         console.error("Error fetching capacities:", error);
       }
     };
+
     fetchLatestCapacities();
   }, []);
 
@@ -93,63 +114,61 @@ function CapacityData() {
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Modernized Title */}
           <Text style={styles.title}>Capacity at UVA</Text>
 
-          {locations.map((location, index) => {
-            const currentCapacity = capacities[location.name]?.current ?? 0;
-            const totalCapacity =
-              capacities[location.name]?.total ?? location.totalCapacity;
+          {errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          ) : (
+            locations.map((location, index) => {
+              const currentCapacity = capacities[location.name]?.current ?? 0;
+              const totalCapacity =
+                capacities[location.name]?.total ?? location.totalCapacity;
 
-            const rawRatio =
-              totalCapacity > 0 ? currentCapacity / totalCapacity : 0;
-            const safeRatio = Math.max(Math.min(rawRatio, 1), 0);
+              const ratio =
+                totalCapacity > 0 ? currentCapacity / totalCapacity : 0;
+              const clamped = Math.max(Math.min(ratio, 1), 0);
+              const progressValue = parseFloat(clamped.toFixed(2));
 
-            const progressValue = parseFloat(safeRatio.toFixed(2));
-
-            return (
-              <TouchableOpacity
-                key={index}
-                style={styles.card}
-                onPress={() => {
-                  if (location.name === "Clemons Library") {
-                    navigation.navigate("Clemons");
-                  }
-                  // else if (location.name === "Shannon Library") {
-                  //   navigation.navigate("Shannon");
-
-                  // }
-                }}
-              >
-                <Image source={location.image} style={styles.image} />
-                <View style={styles.infoContainer}>
-                  <Text style={styles.locationName}>{location.name}</Text>
-                  <Text style={styles.capacityText}>
-                    <Text style={styles.currentCapacity}>
-                      {currentCapacity}
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.card}
+                  onPress={() => {
+                    if (location.name === "Clemons Library") {
+                      navigation.navigate("Clemons");
+                    }
+                  }}
+                >
+                  <Image source={location.image} style={styles.image} />
+                  <View style={styles.infoContainer}>
+                    <Text style={styles.locationName}>{location.name}</Text>
+                    <Text style={styles.capacityText}>
+                      <Text style={styles.currentCapacity}>
+                        {currentCapacity}
+                      </Text>
+                      /<Text style={styles.totalCapacity}>{totalCapacity}</Text>{" "}
+                      (
+                      <Text style={styles.percentage}>
+                        {(clamped * 100).toFixed(0)}%
+                      </Text>
+                      )
                     </Text>
-                    /<Text style={styles.totalCapacity}>{totalCapacity}</Text> (
-                    <Text style={styles.percentage}>
-                      {(safeRatio * 100).toFixed(0)}%
-                    </Text>
-                    )
-                  </Text>
-                  <ProgressBar
-                    progress={progressValue}
-                    color="#E57200" // UVA orange
-                    style={styles.progressBar}
-                  />
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+                    <ProgressBar
+                      progress={progressValue}
+                      color="#E57200"
+                      style={styles.progressBar}
+                    />
+                  </View>
+                </TouchableOpacity>
+              );
+            })
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
 }
 
-// Updated styling for modern look
 const styles = StyleSheet.create({
   gradientContainer: {
     flex: 1,
@@ -171,6 +190,12 @@ const styles = StyleSheet.create({
     textShadowColor: "#000000",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 6,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 18,
+    textAlign: "center",
+    marginVertical: 20,
   },
   card: {
     width: "100%",

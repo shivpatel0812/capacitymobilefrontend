@@ -13,7 +13,6 @@ import { ProgressBar } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 
-// Images for locations
 import ClemonsImage from "../../assets/Clemons-location.png";
 import ShannonImage from "../../assets/2f984490-663c-4515-b7e0-03acbfb328f2.sized-1000x1000.jpg";
 import RiceHallImage from "../../assets/ricehall.png";
@@ -40,25 +39,56 @@ function CapacityData() {
           );
         }
 
-        // Parse the API response
+        // Parse the initial API response
         const parsed = await response.json();
-        console.log("Raw API Response:", parsed);
+        console.log("Parsed from fetch (may include extra wrapper):", parsed);
 
-        // Use the actual field names from your API response
-        const { clemons_results, shannon_results } = parsed;
+        // If 'parsed.body' is present and is a JSON string, parse it again.
+        let finalResponse;
+        if (parsed.body) {
+          finalResponse = JSON.parse(parsed.body);
+        } else {
+          finalResponse = parsed;
+        }
 
-        // Build the capacities object based on the API response
+        // Now finalResponse should look like:
+        // {
+        //   "message": "Latest capacities fetched successfully",
+        //   "data": {
+        //     "ricehall": {...},
+        //     "clemonslibrary": {...},
+        //     "shannon": {...}
+        //   }
+        // }
+
+        console.log(
+          "Final response object after possible re-parse:",
+          finalResponse
+        );
+
+        const { data } = finalResponse || {};
+        if (!data) {
+          throw new Error(
+            "Unexpected API response structure: missing data field"
+          );
+        }
+
+        // Now extract data for each library
+        const { ricehall, clemonslibrary, shannon } = data;
+
+        // Build a new capacities object using your new structure
         const formattedCapacities = {
           "Clemons Library": {
-            current: clemons_results?.capacity?.final_capacity || 0,
+            // fallback to 0 if capacity.final_capacity doesn’t exist
+            current: clemonslibrary?.capacity?.final_capacity ?? 0,
             total: 2000,
           },
           "Shannon Library": {
-            current: shannon_results?.final_capacity || 0,
+            current: shannon?.total_capacity ?? 0,
             total: 2000,
           },
           "Rice Hall": {
-            current: 0, // No data for Rice Hall in the API response
+            current: ricehall?.total_capacity ?? 0,
             total: 400,
           },
           "AFC Gym": {

@@ -1,8 +1,6 @@
-import { registerRootComponent } from 'expo';
 import { initializeApp } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";  // Add isSupported
-
-import App from './App';
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBxqMQZ1W-VMAyGgykMDS5RijNUE_MIGAM",
@@ -12,18 +10,10 @@ const firebaseConfig = {
     messagingSenderId: "178569930515",
     appId: "1:178569930515:web:408d87807ac93fedd51ce6",
     measurementId: "G-XSTC85LHSZ"
-};
+  };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Analytics only if supported (won't work in development)
-const initAnalytics = async () => {
-    if (await isSupported()) {
-        return getAnalytics(app);
-    }
-    return null;
-};
-initAnalytics();
-
-registerRootComponent(App);
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage), // Enable persistence with AsyncStorage
+});

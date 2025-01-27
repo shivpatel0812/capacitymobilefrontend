@@ -7,18 +7,34 @@ import Login from "./src/Components/Login";
 import CapacityData from "./src/Components/CapacityData";
 import Clemons from "./src/Components/Clemons";
 import Shannon from "./src/Components/Shannon";
+import GetStartedScreen from "./src/Components/onboarding/GetStartedScreen"; // Import your onboarding screen
+import VerificationPage from "./src/Components/onboarding/VerificationScreen"; // Verification Page
+
 
 const Stack = createStackNavigator();
 
 function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="GetStarted">
+        {/* Onboarding Screen */}
+        <Stack.Screen
+          name="GetStarted"
+          component={GetStartedScreen}
+          options={{ headerShown: false }}
+        />
+
         {/* Login Screen (no header) */}
         <Stack.Screen
           name="Login"
           component={Login}
           options={{ headerShown: false }}
+        />
+        {/* Email Verification Screen */}
+        <Stack.Screen
+          name="VerificationPage"
+          component={VerificationPage}
+          options={{ title: 'Verification', headerShown: false }}
         />
 
         {/* Capacity Data Screen */}
@@ -29,12 +45,8 @@ function App() {
             headerTitle: "",
             headerTransparent: true,
             headerTintColor: "#fff",
-
-            // Label on the back button
             headerBackTitle: "Login",
             headerBackTitleVisible: true,
-
-            // Move arrow up by 10px (adjust as you like)
             headerLeftContainerStyle: {
               marginTop: 50,
             },
@@ -50,8 +62,6 @@ function App() {
             headerTransparent: true,
             headerTintColor: "#fff",
             headerBackTitleVisible: false,
-
-            // If you also want to move the arrow for Clemons screen:
             headerLeftContainerStyle: {
               marginTop: -10,
             },

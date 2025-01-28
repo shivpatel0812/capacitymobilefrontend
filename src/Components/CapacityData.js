@@ -79,8 +79,8 @@ function CapacityData() {
         // Build a new capacities object using your new structure
         const formattedCapacities = {
           "Clemons Library": {
-            // fallback to 0 if capacity.final_capacity doesn’t exist
-            current: clemonslibrary?.capacity?.final_capacity ?? 0,
+            // Use the new 'calculated_capacities.total_capacity' field
+            current: clemonslibrary?.calculated_capacities?.total_capacity ?? 0,
             total: 2000,
           },
           "Shannon Library": {

@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { ProgressBar } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
-
 import Clem1 from "../../assets/clem1.jpg";
 import Clem2 from "../../assets/clem2.png";
 import Clem3 from "../../assets/clem3.jpg";
@@ -34,36 +33,29 @@ export default function Clemons() {
     const fetchFloorData = async () => {
       try {
         const response = await fetch(
-          "http://172.16.102.44:3001/api/latest-capacities"
+          "https://ykfoxx9h9a.execute-api.us-east-2.amazonaws.com/reactdeploy/nodemongo"
         );
         const result = await response.json();
-
+        const finalResponse = result.body ? JSON.parse(result.body) : result;
         if (
-          result &&
-          result.data &&
-          result.data.clemonslibrary &&
-          result.data.clemonslibrary.capacity &&
-          result.data.clemonslibrary.capacity.floor_results
+          finalResponse &&
+          finalResponse.data &&
+          finalResponse.data.clemonslibrary &&
+          finalResponse.data.clemonslibrary.calculated_capacities
         ) {
-          const floorResults =
-            result.data.clemonslibrary.capacity.floor_results;
-          const maxCapacityPerFloor = 100;
-
+          const calculatedCapacities =
+            finalResponse.data.clemonslibrary.calculated_capacities;
+          const maxCapacityPerFloor = 1000;
           const floorImageMap = {
-            floor_1: Clem1,
-            floor_2: Clem2,
-            floor_3: Clem3,
-            floor_4: Clem4,
+            camera1: Clem1,
+            camera2_5_joint: Clem2,
+            camera3: Clem3,
+            camera4: Clem4,
           };
-
-          const formattedFloors = Object.entries(floorResults).map(
+          const formattedFloors = Object.entries(calculatedCapacities).map(
             ([floorKey, capacity], index) => {
-              const floorNumber = floorKey.split("_")[1];
-              const floorName = `Floor ${floorNumber}`;
-              const floorImage =
-                floorImageMap[floorKey] ||
-                require("../../assets/Clemons-location.png");
-
+              const floorName = `Floor ${index + 1}`;
+              const floorImage = floorImageMap[floorKey] || Clem1;
               return {
                 id: index + 1,
                 name: floorName,
@@ -73,38 +65,27 @@ export default function Clemons() {
               };
             }
           );
-
           setFloors(formattedFloors);
         } else {
           setErrorMessage("Clemons floor results not found in API response.");
         }
       } catch (error) {
         setErrorMessage("Error fetching Clemons data.");
-        console.error(error);
       }
     };
-
     fetchFloorData();
   }, []);
 
   return (
-    <LinearGradient
-      // Navy gradient background (UVA style)
-      colors={["#232D4B", "#0D1B33"]}
-      style={styles.gradient}
-    >
+    <LinearGradient colors={["#232D4B", "#0D1B33"]} style={styles.gradient}>
       <StatusBar
         barStyle="light-content"
         translucent
         backgroundColor="transparent"
       />
-
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.container}>
-          {/* Big, modern UVA-style header text */}
           <Text style={styles.header}>Clemons Library</Text>
-
-          {/* Open Hours Card */}
           <View style={styles.hoursCard}>
             <Text style={styles.hoursTitle}>Open Hours</Text>
             <View style={styles.hoursTable}>
@@ -116,13 +97,13 @@ export default function Clemons() {
               ))}
             </View>
           </View>
-
           {errorMessage ? (
             <Text style={styles.errorMessage}>{errorMessage}</Text>
           ) : (
             floors.map((floor) => {
               const ratio = floor.capacity / floor.total;
               const safeRatio = Math.max(Math.min(ratio, 1), 0);
+              const roundedRatio = parseFloat(safeRatio.toFixed(2));
               return (
                 <View key={floor.id} style={styles.floorCard}>
                   <Image source={floor.image} style={styles.image} />
@@ -131,14 +112,11 @@ export default function Clemons() {
                     <Text style={styles.capacityText}>
                       <Text style={styles.currentCap}>{floor.capacity}</Text>/
                       <Text style={styles.totalCap}>{floor.total}</Text> (
-                      <Text style={styles.percent}>
-                        {(safeRatio * 100).toFixed(0)}%
-                      </Text>
-                      )
+                      {(safeRatio * 100).toFixed(0)}%)
                     </Text>
                     <ProgressBar
-                      progress={safeRatio}
-                      color="#E57200" // UVA orange
+                      progress={roundedRatio}
+                      color="#E57200"
                       style={styles.progressBar}
                     />
                   </View>
@@ -153,21 +131,17 @@ export default function Clemons() {
 }
 
 const styles = StyleSheet.create({
-  // Full-screen navy gradient
   gradient: {
     flex: 1,
   },
   safeArea: {
     flex: 1,
   },
-  // Container for ScrollView content
   container: {
     paddingHorizontal: 16,
     paddingTop: 20,
     paddingBottom: 40,
   },
-
-  // Big bold UVA-themed header
   header: {
     fontSize: 36,
     fontWeight: "900",
@@ -178,19 +152,13 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 6,
   },
-
-  // White card for open hours
   hoursCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 14,
     padding: 15,
     marginBottom: 20,
-
-    // Orange accent on the left
     borderLeftWidth: 8,
     borderLeftColor: "#E57200",
-
-    // Shadow/elevation
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
@@ -221,34 +189,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#505050",
   },
-
-  // Error
   errorMessage: {
     textAlign: "center",
     color: "red",
     fontSize: 16,
     marginVertical: 20,
   },
-
-  // White card for each floor
   floorCard: {
     flexDirection: "row",
     backgroundColor: "#ffffff",
     marginBottom: 16,
     borderRadius: 14,
     padding: 15,
-
     borderLeftWidth: 8,
     borderLeftColor: "#E57200",
-
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
     elevation: 4,
   },
-
-  // Larger images for floors
   image: {
     width: 100,
     height: 100,
@@ -277,15 +237,10 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: "#505050",
   },
-  percent: {
-    fontWeight: "700",
-    color: "#232D4B",
-  },
   progressBar: {
     height: 10,
     borderRadius: 5,
     backgroundColor: "#e0e0e0",
-    // Subtle shadow for modern look
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 4,

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "MyExpoApp",
-    "slug": "MyExpoApp",
+    "name": "CapAtUVA",
+    "slug": "capatuva",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,10 +10,12 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffffff",
+      "scheme": "capatuva"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.srivatsa.krish.capatuva"
     },
     "android": {
       "adaptiveIcon": {

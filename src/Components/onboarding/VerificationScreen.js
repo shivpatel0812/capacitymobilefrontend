@@ -1,51 +1,68 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, TextInput, Alert } from 'react-native';
-import { sendSignInLinkToEmail } from "firebase/auth";
-import { auth } from './firebaseConfig'; // Import Firebase config
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  TextInput,
+  Alert
+} from 'react-native';
+import { supabase } from './supabaseClient';
 
-function VerificationPage({ route, navigation }) {
-  const { email } = route.params; // Retrieve the email passed from EmailInputScreen
-  const [verificationCode, setVerificationCode] = useState('');
+export default function VerificationScreen({ route, navigation }) {
+  // Retrieve the email passed from a previous screen (e.g., EmailInputScreen)
+  const { email } = route.params || {};
   const [codeSent, setCodeSent] = useState(false);
 
-  // Function to handle "Send Code" button
+  // Function to handle "Send Code" (actually a magic link) via Supabase
   const handleSendCode = async () => {
-    const actionCodeSettings = {
-      url: 'http://www.virginia.edu', // Replace with your app's URL
-      handleCodeInApp: true,
-    };
+    // This sends a magic link to the user's email
+    // Make sure to set the correct redirect URL below, and also configure it in Supabase Auth settings
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        // This should be the URL that your user is directed to after they click the magic link
+        // In an Expo dev environment, you can set an Expo deep link like "myapp://expo-development"
+        emailRedirectTo: 'capatuva://',
+      },
+    });
 
-    try {
-        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-        Alert.alert('Verification Link Sent', `A verification link has been sent to ${email}`);
-      } catch (error) {
-        console.error(error.message);
-        Alert.alert('Error', error.message);
-      }
-      
+    if (error) {
+      Alert.alert('Error', error.message);
+    } else {
+      setCodeSent(true);
+      Alert.alert(
+        'Verification Link Sent',
+        `A magic link has been sent to ${email}. Please check your inbox.`
+      );
+    }
   };
 
-  // Function to handle "Next" button
+  // Handle "Next" button press
   const handleNext = () => {
-    if (codeSent) {
-      Alert.alert(
-        'Check Your Email',
-        'Please check your email inbox and click the verification link to continue.'
-      );
-      // Navigate to the next screen or show further instructions
-    } else {
-      Alert.alert('Error', 'Please send a verification code first.');
+    if (!codeSent) {
+      Alert.alert('Error', 'Please send a verification link first.');
+      return;
     }
+
+    // This is up to your flow—often you'd show a message telling the user:
+    // "Check your email. Once you tap the link, you'll be signed in automatically."
+    // Or navigate to a "check your email" screen.
+    Alert.alert('Check Your Email', 'Click the magic link to verify your account.');
+    
+    // If you want to navigate to a "Set Password" screen after they've verified:
+    // navigation.navigate('SetPasswordScreen');
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.inputContainer}>
         <Text style={styles.headerText}>
-          To register as a member,{'\n'}Please verify your email.
+          To register as a member,{'\n'}please verify your email.
         </Text>
 
-        {/* Email Box with Send Code Button */}
+        {/* Email Box with Send Code (Magic Link) Button */}
         <View style={styles.emailContainer}>
           <TextInput
             style={styles.nonEditableInput}
@@ -56,15 +73,15 @@ function VerificationPage({ route, navigation }) {
           <TouchableOpacity
             style={[styles.sendCodeButton, codeSent && styles.sendCodeButtonDisabled]}
             onPress={handleSendCode}
-            disabled={codeSent} // Disable the button after sending the code
+            disabled={codeSent}
           >
-            <Text style={styles.sendCodeText}>{codeSent ? 'Code Sent' : 'Send Code'}</Text>
+            <Text style={styles.sendCodeText}>{codeSent ? 'Link Sent' : 'Send Link'}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Next Button */}
         <TouchableOpacity
-          style={[styles.nextButton, codeSent ? styles.nextButtonActive : null]}
+          style={[styles.nextButton, codeSent && styles.nextButtonActive]}
           onPress={handleNext}
         >
           <Text style={styles.nextButtonText}>Next</Text>
@@ -154,5 +171,3 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
-
-export default VerificationPage;

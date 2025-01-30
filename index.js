@@ -1,29 +1,8 @@
 import { registerRootComponent } from 'expo';
-import { initializeApp } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";  // Add isSupported
 
 import App from './App';
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBxqMQZ1W-VMAyGgykMDS5RijNUE_MIGAM",
-    authDomain: "cap-at-uva.firebaseapp.com",
-    projectId: "cap-at-uva",
-    storageBucket: "cap-at-uva.firebasestorage.app",
-    messagingSenderId: "178569930515",
-    appId: "1:178569930515:web:408d87807ac93fedd51ce6",
-    measurementId: "G-XSTC85LHSZ"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialize Analytics only if supported (won't work in development)
-const initAnalytics = async () => {
-    if (await isSupported()) {
-        return getAnalytics(app);
-    }
-    return null;
-};
-initAnalytics();
-
+// registerRootComponent calls AppRegistry.registerComponent('main', () => App);
+// It also ensures that whether you load the app in Expo Go or in a native build,
+// the environment is set up appropriately
 registerRootComponent(App);

@@ -52,8 +52,9 @@ export default function Shannon() {
             floor_5: Shannon5,
           };
 
-          const formattedFloors = Object.entries(floorResults).map(
-            ([floorKey, capacity]) => {
+          const formattedFloors = Object.entries(floorResults)
+            .filter(([floorKey]) => floorKey !== "floor_5") // Filter out floor_5
+            .map(([floorKey, capacity]) => {
               const floorNumber = floorKey.split("_")[1]; // "floor_1" -> "1"
               const floorName = `Floor ${floorNumber}`;
               const floorImage = floorImageMap[floorKey] || Shannon1;
@@ -72,8 +73,7 @@ export default function Shannon() {
                 capacity: sanitizedCapacity,
                 total: maxCapacityPerFloor,
               };
-            }
-          );
+            });
 
           console.log("Formatted Floors:", formattedFloors);
           setFloors(formattedFloors);

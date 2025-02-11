@@ -20,13 +20,13 @@ export default function Clemons() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const openHours = [
-    { day: "Mon", hours: "8:00 AM - 12:00 AM" },
-    { day: "Tue", hours: "8:00 AM - 12:00 AM" },
-    { day: "Wed", hours: "8:00 AM - 12:00 AM" },
-    { day: "Thu", hours: "8:00 AM - 12:00 AM" },
-    { day: "Fri", hours: "8:00 AM - 9:00 PM" },
-    { day: "Sat", hours: "9:00 AM - 9:00 PM" },
-    { day: "Sun", hours: "9:00 AM - 11:00 PM" },
+    { day: "Mon", hours: "8:00 AM – 12:00 AM" },
+    { day: "Tue", hours: "8:00 AM – 12:00 AM" },
+    { day: "Wed", hours: "8:00 AM – 12:00 AM" },
+    { day: "Thu", hours: "8:00 AM – 12:00 AM" },
+    { day: "Fri", hours: "8:00 AM – 9:00 PM" },
+    { day: "Sat", hours: "9:00 AM – 9:00 PM" },
+    { day: "Sun", hours: "9:00 AM – 11:00 PM" },
   ];
 
   useEffect(() => {
@@ -46,25 +46,26 @@ export default function Clemons() {
           const calculatedCapacities =
             finalResponse.data.clemonslibrary.calculated_capacities;
           const maxCapacityPerFloor = 1000;
-          const floorImageMap = {
-            camera1: Clem1,
-            camera2_5_joint: Clem2,
-            camera3: Clem3,
-            camera4: Clem4,
-          };
-          const formattedFloors = Object.entries(calculatedCapacities).map(
-            ([floorKey, capacity], index) => {
-              const floorName = `Floor ${index + 1}`;
-              const floorImage = floorImageMap[floorKey] || Clem1;
-              return {
-                id: index + 1,
-                name: floorName,
-                image: floorImage,
-                capacity,
-                total: maxCapacityPerFloor,
-              };
-            }
-          );
+
+          // Explicit mapping of camera keys to floor numbers
+          const floorMapping = [
+            { key: "camera1", name: "Floor 1", image: Clem1 },
+            { key: "camera2_5_joint", name: "Floor 2", image: Clem2 },
+            { key: "camera3", name: "Floor 3", image: Clem3 },
+            { key: "camera4", name: "Floor 4", image: Clem4 },
+          ];
+
+          const formattedFloors = floorMapping.map((floor) => {
+            const capacity = calculatedCapacities[floor.key] || 0; // Default to 0 if capacity is missing
+            return {
+              id: floor.key,
+              name: floor.name,
+              image: floor.image,
+              capacity: capacity,
+              total: maxCapacityPerFloor,
+            };
+          });
+
           setFloors(formattedFloors);
         } else {
           setErrorMessage("Clemons floor results not found in API response.");

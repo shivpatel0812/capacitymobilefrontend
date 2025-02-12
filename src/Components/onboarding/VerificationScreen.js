@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// screens/VerificationScreen.js
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,76 +7,64 @@ import {
   StyleSheet,
   SafeAreaView,
   TextInput,
-  Alert
-} from 'react-native';
-import { supabase } from './supabaseClient';
-import CreatePasswordScreen from './CreatePasswordScreen';
+  Alert,
+} from "react-native";
+import { supabase } from "./supabaseClient.js";
 
 export default function VerificationScreen({ route, navigation }) {
-  // Retrieve the email passed from a previous screen (e.g., EmailInputScreen)
   const { email } = route.params || {};
   const [codeSent, setCodeSent] = useState(false);
 
-  // Function to handle "Send Code" (actually a magic link) via Supabase
-  const handleSendCode = async () => {
-    // This sends a magic link to the user's email
-    // Make sure to set the correct redirect URL below, and also configure it in Supabase Auth settings
+  // Send magic link to user’s email
+  const handleSendLink = async () => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        // This should be the URL that your user is directed to after they click the magic link
-        // In an Expo dev environment, you can set an Expo deep link like "myapp://expo-development"
-        emailRedirectTo: 'capatuva://expo-development',
+        // Must match your app’s deep link scheme
+        emailRedirectTo: "myapp://",
       },
     });
 
     if (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert("Error", error.message);
     } else {
       setCodeSent(true);
-      Alert.alert(
-        'Verification Link Sent',
-        `A magic link has been sent to ${email}. Please check your inbox.`
-      );
+      Alert.alert("Check Your Email", `We sent a link to ${email}`);
     }
   };
 
-  // Handle "Next" button press
   const handleNext = () => {
     if (!codeSent) {
-      Alert.alert('Error', 'Please send a verification link first.');
+      Alert.alert("Wait!", "Please send the magic link first.");
       return;
     }
-    // E.g., in VerificationScreen.js handleNext:
-    navigation.navigate('CreatePassword');
-
+    // At this point, we wait for the user to tap that link and come back via deep link
+    // Once they do, the session is established. Then they can set a password:
+    navigation.navigate("CreatePassword");
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.inputContainer}>
         <Text style={styles.headerText}>
-          To register as a member,{'\n'}please verify your email.
+          Please verify your email with a magic link.
         </Text>
-
-        {/* Email Box with Send Code (Magic Link) Button */}
         <View style={styles.emailContainer}>
           <TextInput
             style={styles.nonEditableInput}
             value={email}
-            editable={false} // Make the email field non-editable
-            placeholderTextColor="#999"
+            editable={false}
           />
           <TouchableOpacity
-            style={[styles.sendCodeButton, codeSent && styles.sendCodeButtonDisabled]}
-            onPress={handleSendCode}
+            style={[styles.sendLinkButton, codeSent && styles.buttonDisabled]}
+            onPress={handleSendLink}
             disabled={codeSent}
           >
-            <Text style={styles.sendCodeText}>{codeSent ? 'Link Sent' : 'Send Link'}</Text>
+            <Text style={styles.sendLinkText}>
+              {codeSent ? "Link Sent" : "Send Link"}
+            </Text>
           </TouchableOpacity>
         </View>
-
-        {/* Next Button */}
         <TouchableOpacity
           style={[styles.nextButton, codeSent && styles.nextButtonActive]}
           onPress={handleNext}
@@ -83,8 +72,6 @@ export default function VerificationScreen({ route, navigation }) {
           <Text style={styles.nextButtonText}>Next</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Footer Section */}
       <View style={styles.footerContainer}>
         <Text style={styles.footerText}>CAP@UVA</Text>
       </View>
@@ -95,75 +82,52 @@ export default function VerificationScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafc',
-    justifyContent: 'space-between',
+    backgroundColor: "#f9fafc",
+    justifyContent: "space-between",
   },
-  inputContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
+  inputContainer: { flex: 1, justifyContent: "center", padding: 20 },
   headerText: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'left',
+    fontWeight: "bold",
     marginBottom: 20,
+    color: "#333",
   },
   emailContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   nonEditableInput: {
-    backgroundColor: '#f1f3f5',
+    flex: 1,
+    backgroundColor: "#f1f3f5",
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#333',
-    flex: 1,
+    color: "#333",
     marginRight: 10,
   },
-  sendCodeButton: {
-    backgroundColor: '#E57200', // UVA Orange
+  sendLinkButton: {
+    backgroundColor: "#E57200",
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  sendCodeButtonDisabled: {
-    backgroundColor: '#d9d9d9', // Gray when disabled
+  buttonDisabled: {
+    backgroundColor: "#d9d9d9",
   },
-  sendCodeText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
+  sendLinkText: { fontSize: 14, fontWeight: "bold", color: "#fff" },
   nextButton: {
-    backgroundColor: '#d9d9d9',
+    backgroundColor: "#d9d9d9",
     borderRadius: 8,
     paddingVertical: 14,
-    width: '100%',
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 16,
   },
   nextButtonActive: {
-    backgroundColor: '#E57200',
+    backgroundColor: "#E57200",
   },
-  nextButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  footerContainer: {
-    paddingBottom: 20,
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
+  nextButtonText: { fontSize: 16, fontWeight: "600", color: "#fff" },
+  footerContainer: { alignItems: "center", paddingBottom: 20 },
+  footerText: { fontSize: 18, fontWeight: "bold", color: "#333" },
 });

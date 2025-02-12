@@ -1,123 +1,82 @@
 // App.js
+import "react-native-gesture-handler";
 import React, { useEffect } from "react";
-import { Linking } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { Linking, Alert, Platform } from "react-native";
+import * as LinkingExpo from "expo-linking";
 
-// Supabase v2 client
 import { supabase } from "./src/Components/onboarding/supabaseClient";
-
-// Screens
-import Login from "./src/Components/Login";
-import CapacityData from "./src/Components/CapacityData";
-import Clemons from "./src/Components/Clemons";
-import Shannon from "./src/Components/Shannon";
-import GetStartedScreen from "./src/Components/onboarding/GetStartedScreen";
-import VerificationPage from "./src/Components/onboarding/VerificationScreen";
+import EmailInputScreen from "./src/Components/onboarding/EmailInputScreen";
+import VerificationScreen from "./src/Components/onboarding/VerificationScreen";
 import CreatePasswordScreen from "./src/Components/onboarding/CreatePasswordScreen";
 
 const Stack = createStackNavigator();
 
 export default function App() {
+  // We’ll use this app scheme in Supabase’s `emailRedirectTo`.
+  // For Expo, you might have "myapp://", or "exp://127.0.0.1:19000/--", etc.
+  // Make sure it matches your Supabase Auth settings.
+  const scheme = "myapp://";
+
+  // Handle deep links from cold start
+  const prefix = LinkingExpo.createURL("/"); // e.g., "myapp:///" on iOS simulator
+
+  // 1) On mount, parse any initial URL
   useEffect(() => {
-    // 1. If the app is launched (cold start) by a magic link
-    Linking.getInitialURL().then((initialUrl) => {
+    (async () => {
+      const initialUrl = await Linking.getInitialURL();
       if (initialUrl) {
-        supabase.auth.setSessionFromUrl({ url: initialUrl });
+        handleDeepLink({ url: initialUrl });
       }
-    });
+    })();
 
-    // 2. If the app is already running, but a magic link is tapped
-    const handleDeepLink = ({ url }) => {
-      supabase.auth.setSessionFromUrl({ url });
-    };
-
-    // Subscribe to URL events
+    // 2) Also listen for incoming links while app is open/in background
     const subscription = Linking.addEventListener("url", handleDeepLink);
-
-    // Cleanup on unmount
-    return () => subscription.remove();
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
+  // This is where we tell Supabase to consume the link and finalize the session
+  const handleDeepLink = async (event) => {
+    let url = event.url;
+
+    // On Android, sometimes you get "myapp:///" or "myapp://some/path"
+    // Just pass the full URL to the supabase function that finalizes sign-in
+    const { data, error } = await supabase.auth.exchangeCodeForSession(url);
+
+    if (error) {
+      Alert.alert("Link Error", error.message);
+    } else if (data?.session) {
+      // At this point, we have a valid user session
+      Alert.alert("Success", "You are signed in. Now you can set a password.");
+    }
+  };
+
+  // Use React Navigation to manage screens
   return (
-    // Provide the 'linking' prop to handle your custom scheme
     <NavigationContainer
       linking={{
-        // The scheme(s) your app handles. Must match "scheme" in app.json.
-        prefixes: ["capatuva://"],
-        // Optional: define route configs if you want to map deep link paths to screens
-        // config: {
-        //   screens: {
-        //     CreatePassword: "expo-development",
-        //   },
-        // },
+        prefixes: [prefix],
+        // If you have a deep link route config, you can specify it here, but not strictly required.
       }}
     >
-      <Stack.Navigator initialRouteName="GetStarted">
-        {/* Onboarding Screen */}
+      <Stack.Navigator>
         <Stack.Screen
-          name="GetStarted"
-          component={GetStartedScreen}
-          options={{ headerShown: false }}
+          name="EmailInput"
+          component={EmailInputScreen}
+          options={{ title: "Enter .edu Email" }}
         />
-
-        {/* Login Screen (no header) */}
         <Stack.Screen
-          name="Login"
-          component={Login}
-          options={{ headerShown: false }}
+          name="Verification"
+          component={VerificationScreen}
+          options={{ title: "Verify Email" }}
         />
-
-        {/* Verification Screen */}
-        <Stack.Screen
-          name="VerificationPage"
-          component={VerificationPage}
-          options={{ headerShown: false }}
-        />
-
-        {/* Create Password Screen */}
         <Stack.Screen
           name="CreatePassword"
           component={CreatePasswordScreen}
-          options={{ headerShown: false }}
-        />
-
-        {/* Capacity Data Screen */}
-        <Stack.Screen
-          name="CapacityData"
-          component={CapacityData}
-          options={{
-            headerTitle: "",
-            headerTransparent: true,
-            headerTintColor: "#fff",
-            headerBackTitle: "Login",
-            headerBackTitleVisible: true,
-            headerLeftContainerStyle: {
-              marginTop: 50,
-            },
-          }}
-        />
-
-        {/* Clemons Library Detailed Page */}
-        <Stack.Screen
-          name="Clemons"
-          component={Clemons}
-          options={{
-            headerTitle: "",
-            headerTransparent: true,
-            headerTintColor: "#fff",
-            headerBackTitleVisible: false,
-            headerLeftContainerStyle: {
-              marginTop: -10,
-            },
-          }}
-        />
-
-        {/* Shannon Library Detailed Page */}
-        <Stack.Screen
-          name="Shannon"
-          component={Shannon}
-          options={{ title: "Shannon Library" }}
+          options={{ title: "Create Password" }}
         />
       </Stack.Navigator>
     </NavigationContainer>

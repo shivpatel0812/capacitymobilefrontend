@@ -1,15 +1,16 @@
+// screens/EmailInputScreen.js
 import React, { useState } from "react";
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
+  Alert,
   StyleSheet,
   SafeAreaView,
-  TextInput,
-  Alert,
 } from "react-native";
 
-function EmailInputScreen({ navigation }) {
+export default function EmailInputScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [isValid, setIsValid] = useState(false);
 
@@ -21,7 +22,7 @@ function EmailInputScreen({ navigation }) {
 
   const handleConfirm = () => {
     if (isValid) {
-      navigation.navigate("VerificationPage", { email }); // Pass email to VerificationPage
+      navigation.navigate("Verification", { email });
     } else {
       Alert.alert("Error", "Please enter a valid .edu email.");
     }
@@ -31,9 +32,8 @@ function EmailInputScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.inputContainer}>
         <Text style={styles.headerText}>
-          Welcome to the <Text style={styles.bold}>CAP@UVA</Text> app!{"\n"}
-          Please enter your .edu email{"\n"}
-          to begin.
+          Welcome to the CAP@UVA app!{"\n"}Please enter your .edu email to
+          begin.
         </Text>
         <TextInput
           style={styles.emailInput}
@@ -61,58 +61,34 @@ function EmailInputScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafc",
     justifyContent: "space-between",
+    backgroundColor: "#f9fafc",
   },
-  inputContainer: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 20,
-  },
+  inputContainer: { flex: 1, justifyContent: "center", padding: 20 },
   headerText: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#333",
-    textAlign: "left",
     marginBottom: 20,
-  },
-  bold: {
-    fontWeight: "bold",
+    color: "#333",
   },
   emailInput: {
     backgroundColor: "#f1f3f5",
     borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 16,
-    width: "100%",
+    padding: 14,
     fontSize: 16,
+    marginBottom: 16,
     color: "#333",
   },
   confirmButton: {
     backgroundColor: "#d9d9d9",
     borderRadius: 8,
     paddingVertical: 14,
-    width: "100%",
     alignItems: "center",
   },
   confirmButtonActive: {
     backgroundColor: "#E57200",
   },
-  confirmButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
-  },
-  footerContainer: {
-    paddingBottom: 20,
-    alignItems: "center",
-  },
-  footerText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-  },
+  confirmButtonText: { fontSize: 16, fontWeight: "600", color: "#fff" },
+  footerContainer: { alignItems: "center", paddingBottom: 20 },
+  footerText: { fontSize: 18, fontWeight: "bold" },
 });
-
-export default EmailInputScreen;

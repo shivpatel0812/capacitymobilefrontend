@@ -27,6 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
+          <string>capatuva</string>
           <string>com.srivatsa.krish.capatuva</string>
         </array>
       </dict>

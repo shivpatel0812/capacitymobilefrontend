@@ -9,6 +9,7 @@ import {
   Alert
 } from 'react-native';
 import { supabase } from './supabaseClient';
+import CreatePasswordScreen from './CreatePasswordScreen';
 
 export default function VerificationScreen({ route, navigation }) {
   // Retrieve the email passed from a previous screen (e.g., EmailInputScreen)
@@ -24,7 +25,7 @@ export default function VerificationScreen({ route, navigation }) {
       options: {
         // This should be the URL that your user is directed to after they click the magic link
         // In an Expo dev environment, you can set an Expo deep link like "myapp://expo-development"
-        emailRedirectTo: 'capatuva://',
+        emailRedirectTo: 'capatuva://expo-development',
       },
     });
 
@@ -45,14 +46,9 @@ export default function VerificationScreen({ route, navigation }) {
       Alert.alert('Error', 'Please send a verification link first.');
       return;
     }
+    // E.g., in VerificationScreen.js handleNext:
+    navigation.navigate('CreatePassword');
 
-    // This is up to your flow—often you'd show a message telling the user:
-    // "Check your email. Once you tap the link, you'll be signed in automatically."
-    // Or navigate to a "check your email" screen.
-    Alert.alert('Check Your Email', 'Click the magic link to verify your account.');
-    
-    // If you want to navigate to a "Set Password" screen after they've verified:
-    // navigation.navigate('SetPasswordScreen');
   };
 
   return (

@@ -1,4 +1,3 @@
-// screens/CreatePasswordScreen.js
 import React, { useState } from "react";
 import {
   View,
@@ -10,7 +9,7 @@ import {
 } from "react-native";
 import { supabase } from "./supabaseClient.js";
 
-export default function CreatePasswordScreen({ navigation }) {
+export default function CreatePasswordScreen({ navigation, session }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -24,9 +23,7 @@ export default function CreatePasswordScreen({ navigation }) {
       return;
     }
 
-    const { data: sessionData, error: sessionError } =
-      await supabase.auth.getSession();
-    if (sessionError || !sessionData?.session) {
+    if (!session) {
       Alert.alert(
         "Not Logged In",
         "No active session found. Please sign in again."
@@ -39,7 +36,8 @@ export default function CreatePasswordScreen({ navigation }) {
       Alert.alert("Error", error.message);
     } else {
       Alert.alert("Success", "Your password has been set successfully!");
-      // e.g. navigation.navigate('Home');
+      // Navigate to home or login screen
+      navigation.navigate("Home");
     }
   };
 

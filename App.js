@@ -1,10 +1,8 @@
-// App.js
 import "react-native-gesture-handler";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { Linking, Alert, Platform } from "react-native";
-import * as LinkingExpo from "expo-linking";
+import { Linking, Alert } from "react-native";
 
 import { supabase } from "./src/Components/onboarding/supabaseClient";
 import EmailInputScreen from "./src/Components/onboarding/EmailInputScreen";
@@ -14,54 +12,90 @@ import CreatePasswordScreen from "./src/Components/onboarding/CreatePasswordScre
 const Stack = createStackNavigator();
 
 export default function App() {
-  // We’ll use this app scheme in Supabase’s `emailRedirectTo`.
-  // For Expo, you might have "myapp://", or "exp://127.0.0.1:19000/--", etc.
-  // Make sure it matches your Supabase Auth settings.
-  const scheme = "myapp://";
+  const prefix = "myapp://"; // Ensure this matches your Supabase Auth redirect settings
 
-  // Handle deep links from cold start
-  const prefix = LinkingExpo.createURL("/"); // e.g., "myapp:///" on iOS simulator
+  const [session, setSession] = useState(null);
 
-  // 1) On mount, parse any initial URL
+  // 🔹 Check session on app start
   useEffect(() => {
-    (async () => {
-      const initialUrl = await Linking.getInitialURL();
-      if (initialUrl) {
-        handleDeepLink({ url: initialUrl });
+    const checkSession = async () => {
+      console.log("🔍 Checking session on app start...");
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.log("❌ Error fetching session:", error.message);
+      } else {
+        console.log("Session data:", data);
+        if (data.session) {
+          console.log("✅ Session found!");
+          setSession(data.session);
+        } else {
+          console.log("❌ No session found on start.");
+        }
       }
-    })();
+    };
 
-    // 2) Also listen for incoming links while app is open/in background
+    checkSession();
+  }, []);
+
+  // 🔹 Handle deep links (cold start and while app is running)
+  useEffect(() => {
+    const handleDeepLink = async (event) => {
+      const { url } = event;
+      console.log("🔗 Received deep link:", url);
+      if (!url) {
+        console.log("No URL in deep link event.");
+        return;
+      }
+      console.log("Exchanging code for session with URL:", url);
+      const { data, error } = await supabase.auth.exchangeCodeForSession(url);
+      if (error) {
+        console.log("❌ Supabase exchange error:", error.message);
+        Alert.alert("Error", error.message);
+      } else if (data && data.session) {
+        console.log("✅ Session Created Successfully:", data.session);
+        setSession(data.session);
+        Alert.alert(
+          "Success",
+          "You are signed in! Now you can set a password."
+        );
+      } else {
+        console.log("No session returned from exchangeCodeForSession.");
+      }
+    };
+
+    // For cold start deep linking
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        console.log("Initial URL:", url);
+        handleDeepLink({ url });
+      } else {
+        console.log("No initial URL on app launch.");
+      }
+    });
+
+    // Listen for incoming deep links while the app is running
     const subscription = Linking.addEventListener("url", handleDeepLink);
     return () => {
       subscription.remove();
     };
   }, []);
 
-  // This is where we tell Supabase to consume the link and finalize the session
-  const handleDeepLink = async (event) => {
-    let url = event.url;
+  // 🔹 Listen for auth state changes (e.g., when the session is updated)
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        console.log("🔄 Auth state changed:", event, newSession);
+        setSession(newSession);
+      }
+    );
 
-    // On Android, sometimes you get "myapp:///" or "myapp://some/path"
-    // Just pass the full URL to the supabase function that finalizes sign-in
-    const { data, error } = await supabase.auth.exchangeCodeForSession(url);
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
-    if (error) {
-      Alert.alert("Link Error", error.message);
-    } else if (data?.session) {
-      // At this point, we have a valid user session
-      Alert.alert("Success", "You are signed in. Now you can set a password.");
-    }
-  };
-
-  // Use React Navigation to manage screens
   return (
-    <NavigationContainer
-      linking={{
-        prefixes: [prefix],
-        // If you have a deep link route config, you can specify it here, but not strictly required.
-      }}
-    >
+    <NavigationContainer linking={{ prefixes: [prefix] }}>
       <Stack.Navigator>
         <Stack.Screen
           name="EmailInput"
@@ -75,7 +109,9 @@ export default function App() {
         />
         <Stack.Screen
           name="CreatePassword"
-          component={CreatePasswordScreen}
+          component={(props) => (
+            <CreatePasswordScreen {...props} session={session} />
+          )}
           options={{ title: "Create Password" }}
         />
       </Stack.Navigator>

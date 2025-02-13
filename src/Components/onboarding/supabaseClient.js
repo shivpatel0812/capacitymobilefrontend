@@ -11,7 +11,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     detectSessionInUrl: false,
     // Store and refresh tokens automatically
     autoRefreshToken: true,
-    persistSession: false,
+    persistSession: true,
     // Use AsyncStorage to store session in RN
     storage: AsyncStorage,
   },

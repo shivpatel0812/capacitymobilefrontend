@@ -1,3 +1,4 @@
+// src/Components/Login.js
 import React from "react";
 import {
   View,
@@ -7,20 +8,24 @@ import {
   ImageBackground,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons"; // Ensure you have expo/vector-icons installed
+import { Ionicons } from "@expo/vector-icons";
 
 function Login() {
   const navigation = useNavigation();
 
   const handleLoginClick = () => {
-    navigation.navigate("CapacityData");
+    navigation.navigate("LoginScreen"); // Navigate to actual login page
+  };
+
+  const handleSignUpClick = () => {
+    navigation.navigate("SignUpScreen"); // Navigate to actual sign-up page
   };
 
   return (
     <ImageBackground
-      source={require("../../assets/rotunda.jpg")} // Replace with your background image path
+      source={require("../../assets/rotunda.jpg")} // Replace with your image path
       style={styles.background}
-      imageStyle={{ opacity: 0.8 }} // Add a slight opacity to the image
+      imageStyle={{ opacity: 0.8 }}
     >
       <TouchableOpacity
         style={styles.arrowContainer}
@@ -30,8 +35,13 @@ function Login() {
       </TouchableOpacity>
       <View style={styles.contentContainer}>
         <Text style={styles.title}>UVA AI Capacity Tracker</Text>
+
         <TouchableOpacity style={styles.button} onPress={handleLoginClick}>
-          <Text style={styles.buttonText}>Enter</Text>
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={handleSignUpClick}>
+          <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
@@ -46,30 +56,31 @@ const styles = StyleSheet.create({
   },
   arrowContainer: {
     position: "absolute",
-    top: 50, // Adjust this value for the arrow position
+    top: 50,
     left: 20,
   },
   contentContainer: {
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-    marginTop: -250, // Move the content upwards
+    marginTop: -200,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
     color: "#FFFFFF",
     textAlign: "center",
-    marginBottom: 40,
+    marginBottom: 20,
     textShadowColor: "#000000",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
   button: {
-    backgroundColor: "#E57200", // UVA orange
+    backgroundColor: "#E57200",
     paddingVertical: 15,
     paddingHorizontal: 50,
     borderRadius: 8,
+    marginVertical: 10,
   },
   buttonText: {
     fontSize: 22,

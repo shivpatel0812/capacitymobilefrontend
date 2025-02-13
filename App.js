@@ -4,6 +4,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import Login from "./src/Components/Login";
+import LoginScreen from "./src/Components/LoginScreen";
+import SignUpScreen from "./src/Components/SignUpScreen";
 import CapacityData from "./src/Components/CapacityData";
 import Clemons from "./src/Components/Clemons";
 import Shannon from "./src/Components/Shannon";
@@ -14,11 +16,25 @@ function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
-        {/* Login Screen (no header) */}
+        {/* Landing Page */}
         <Stack.Screen
           name="Login"
           component={Login}
           options={{ headerShown: false }}
+        />
+
+        {/* Firebase Login Screen */}
+        <Stack.Screen
+          name="LoginScreen"
+          component={LoginScreen}
+          options={{ title: "Login" }}
+        />
+
+        {/* Sign Up Screen */}
+        <Stack.Screen
+          name="SignUpScreen"
+          component={SignUpScreen}
+          options={{ title: "Sign Up" }}
         />
 
         {/* Capacity Data Screen */}
@@ -29,15 +45,9 @@ function App() {
             headerTitle: "",
             headerTransparent: true,
             headerTintColor: "#fff",
-
-            // Label on the back button
             headerBackTitle: "Login",
             headerBackTitleVisible: true,
-
-            // Move arrow up by 10px (adjust as you like)
-            headerLeftContainerStyle: {
-              marginTop: 50,
-            },
+            headerLeftContainerStyle: { marginTop: 50 },
           }}
         />
 
@@ -50,11 +60,7 @@ function App() {
             headerTransparent: true,
             headerTintColor: "#fff",
             headerBackTitleVisible: false,
-
-            // If you also want to move the arrow for Clemons screen:
-            headerLeftContainerStyle: {
-              marginTop: -10,
-            },
+            headerLeftContainerStyle: { marginTop: -10 },
           }}
         />
 

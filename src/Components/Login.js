@@ -7,8 +7,8 @@ import {
   ImageBackground,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons"; // Ensure you have expo/vector-icons installed
-
+import { Ionicons } from "@expo/vector-icons";
+//test
 function Login() {
   const navigation = useNavigation();
 
@@ -18,9 +18,9 @@ function Login() {
 
   return (
     <ImageBackground
-      source={require("../../assets/rotunda.jpg")} // Replace with your background image path
+      source={require("../../assets/rotunda.jpg")}
       style={styles.background}
-      imageStyle={{ opacity: 0.8 }} // Add a slight opacity to the image
+      imageStyle={{ opacity: 0.8 }}
     >
       <TouchableOpacity
         style={styles.arrowContainer}
@@ -46,14 +46,14 @@ const styles = StyleSheet.create({
   },
   arrowContainer: {
     position: "absolute",
-    top: 50, // Adjust this value for the arrow position
+    top: 50,
     left: 20,
   },
   contentContainer: {
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-    marginTop: -250, // Move the content upwards
+    marginTop: -250,
   },
   title: {
     fontSize: 28,
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
   },
   button: {
-    backgroundColor: "#E57200", // UVA orange
+    backgroundColor: "#E57200",
     paddingVertical: 15,
     paddingHorizontal: 50,
     borderRadius: 8,

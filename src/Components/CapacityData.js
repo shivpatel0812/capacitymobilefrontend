@@ -8,82 +8,50 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  TextInput,
+  Platform,
 } from "react-native";
-import { ProgressBar } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-import { LinearGradient } from "expo-linear-gradient";
 
 import ClemonsImage from "../../assets/Clemons-location.png";
 import ShannonImage from "../../assets/2f984490-663c-4515-b7e0-03acbfb328f2.sized-1000x1000.jpg";
 import RiceHallImage from "../../assets/ricehall.png";
-import AfcImage from "../../assets/Fitness Facilities.jpg"; // Placeholder for AFC Gym
+import AfcImage from "../../assets/Fitness Facilities.jpg";
+import OneCamRaTestImage from "../../assets/OneCamRaTest.jpg";
 
 function CapacityData() {
   const [capacities, setCapacities] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const navigation = useNavigation();
 
   useEffect(() => {
     const fetchLatestCapacities = async () => {
       try {
-        console.log("Fetching latest capacities...");
         const apiUrl =
           "https://ykfoxx9h9a.execute-api.us-east-2.amazonaws.com/reactdeploy/nodemongo";
-
-        const response = await fetch(apiUrl, { method: "GET" });
-        console.log("API Response Status:", response.status);
-
+        const response = await fetch(apiUrl);
         if (!response.ok) {
           throw new Error(
             `HTTP Error: ${response.status} ${response.statusText}`
           );
         }
 
-        // Parse the initial API response
         const parsed = await response.json();
-        console.log("Parsed from fetch (may include extra wrapper):", parsed);
-
-        // If 'parsed.body' is present and is a JSON string, parse it again.
-        let finalResponse;
-        if (parsed.body) {
-          finalResponse = JSON.parse(parsed.body);
-        } else {
-          finalResponse = parsed;
-        }
-
-        // Now finalResponse should look like:
-        // {
-        //   "message": "Latest capacities fetched successfully",
-        //   "data": {
-        //     "ricehall": {...},
-        //     "clemonslibrary": {...},
-        //     "shannon": {...}
-        //   }
-        // }
-
-        console.log(
-          "Final response object after possible re-parse:",
-          finalResponse
-        );
-
+        const finalResponse = parsed.body ? JSON.parse(parsed.body) : parsed;
         const { data } = finalResponse || {};
         if (!data) {
-          throw new Error(
-            "Unexpected API response structure: missing data field"
-          );
+          throw new Error("Unexpected API structure: missing 'data' field.");
         }
 
-        // Now extract data for each library
-        const { ricehall, clemonslibrary, shannon } = data;
+        const { ricehall, clemonslibrary, shannon, onecameratest } = data;
 
-        // Build a new capacities object using your new structure
         const formattedCapacities = {
-          "Clemons Library": {
-            // Use the new 'calculated_capacities.total_capacity' field
+          Clemons: {
             current: clemonslibrary?.calculated_capacities?.total_capacity ?? 0,
             total: 2000,
           },
-          "Shannon Library": {
+          Shannon: {
             current: shannon?.total_capacity ?? 0,
             total: 2000,
           },
@@ -91,17 +59,20 @@ function CapacityData() {
             current: ricehall?.total_capacity ?? 0,
             total: 400,
           },
-          "AFC Gym": {
-            current: 0, // No data for AFC Gym in the API response
+          AFC: {
+            current: 0, // Not in API
             total: 1000,
+          },
+          OneCamRaTest: {
+            current: onecameratest?.total_capacity ?? 0,
+            total: 500,
           },
         };
 
-        console.log("Formatted Capacities:", formattedCapacities);
         setCapacities(formattedCapacities);
-      } catch (error) {
+      } catch (err) {
         setErrorMessage("Failed to fetch capacities.");
-        console.error("Error fetching capacities:", error);
+        console.error("Error fetching capacities:", err);
       }
     };
 
@@ -109,183 +80,182 @@ function CapacityData() {
   }, []);
 
   const locations = [
-    {
-      name: "Clemons Library",
-      image: ClemonsImage,
-      totalCapacity: 2000,
-    },
-    {
-      name: "Shannon Library",
-      image: ShannonImage,
-      totalCapacity: 2000,
-    },
-    {
-      name: "Rice Hall",
-      image: RiceHallImage,
-      totalCapacity: 400,
-    },
-    {
-      name: "AFC Gym",
-      image: AfcImage,
-      totalCapacity: 1000,
-    },
+    { name: "Clemons", image: ClemonsImage, totalCapacity: 2000 },
+    { name: "Shannon", image: ShannonImage, totalCapacity: 2000 },
+    { name: "Rice Hall", image: RiceHallImage, totalCapacity: 400 },
+    { name: "AFC", image: AfcImage, totalCapacity: 1000 },
+    { name: "OneCamRaTest", image: OneCamRaTestImage, totalCapacity: 500 },
   ];
 
+  const filteredLocations = locations.filter((loc) =>
+    loc.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <LinearGradient
-      colors={["#232D4B", "#0D1B33"]}
-      style={styles.gradientContainer}
-    >
-      <StatusBar
-        barStyle="light-content"
-        translucent
-        backgroundColor="transparent"
-      />
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
 
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.title}>Capacity at UVA</Text>
+      <View style={styles.orangeHeader}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backArrow}>&larr;</Text>
+          </TouchableOpacity>
 
+          <Text style={styles.headerTitle}>Capacity Areas</Text>
+        </View>
+
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Clemons, Shannon, AFC..."
+            placeholderTextColor="#999"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+      </View>
+
+      <View style={styles.contentArea}>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
           {errorMessage ? (
             <Text style={styles.errorText}>{errorMessage}</Text>
           ) : (
-            locations.map((location, index) => {
-              const currentCapacity = capacities[location.name]?.current ?? 0;
-              const totalCapacity =
-                capacities[location.name]?.total ?? location.totalCapacity;
-
-              const ratio =
-                totalCapacity > 0 ? currentCapacity / totalCapacity : 0;
-              const clamped = Math.max(Math.min(ratio, 1), 0);
-              const progressValue = parseFloat(clamped.toFixed(2));
+            filteredLocations.map((loc, index) => {
+              const currentCap = capacities[loc.name]?.current ?? 0;
+              const totalCap = capacities[loc.name]?.total ?? loc.totalCapacity;
+              const ratio = totalCap > 0 ? currentCap / totalCap : 0;
+              const percentage = Math.min(Math.max(ratio, 0), 1) * 100;
 
               return (
                 <TouchableOpacity
                   key={index}
                   style={styles.card}
                   onPress={() => {
-                    if (location.name === "Clemons Library") {
-                      navigation.navigate("Clemons");
+                    if (loc.name !== "Shannon") {
+                      navigation.navigate(loc.name);
                     }
                   }}
                 >
-                  <Image source={location.image} style={styles.image} />
-                  <View style={styles.infoContainer}>
-                    <Text style={styles.locationName}>{location.name}</Text>
+                  <Image source={loc.image} style={styles.cardImage} />
+                  <View style={styles.cardInfo}>
+                    <Text style={styles.locationName}>{loc.name}</Text>
                     <Text style={styles.capacityText}>
-                      <Text style={styles.currentCapacity}>
-                        {currentCapacity}
-                      </Text>
-                      /<Text style={styles.totalCapacity}>{totalCapacity}</Text>{" "}
-                      (
-                      <Text style={styles.percentage}>
-                        {(clamped * 100).toFixed(0)}%
-                      </Text>
-                      )
+                      {currentCap}/{totalCap} ({percentage.toFixed(0)}%)
                     </Text>
-                    <ProgressBar
-                      progress={progressValue}
-                      color="#E57200"
-                      style={styles.progressBar}
-                    />
+                    <View style={styles.progressContainer}>
+                      <View
+                        style={[
+                          styles.progressFill,
+                          { width: `${percentage}%` },
+                        ]}
+                      />
+                    </View>
                   </View>
                 </TouchableOpacity>
               );
             })
           )}
         </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+      </View>
+    </SafeAreaView>
   );
 }
 
+export default CapacityData;
+
 const styles = StyleSheet.create({
-  gradientContainer: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
+    backgroundColor: "#E57200",
   },
-  scrollContent: {
+  orangeHeader: {
+    backgroundColor: "#E57200",
     paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 40,
+    paddingTop: Platform.OS === "ios" ? 20 : 10,
+    paddingBottom: 16,
   },
-  title: {
-    fontSize: 36,
-    fontWeight: "900",
-    color: "#FFFFFF",
-    textAlign: "center",
-    marginBottom: 30,
-    textShadowColor: "#000000",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 6,
-  },
-  errorText: {
-    color: "red",
-    fontSize: 18,
-    textAlign: "center",
-    marginVertical: 20,
-  },
-  card: {
-    width: "100%",
+  headerRow: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 12,
+  },
+  backButton: {
+    marginRight: 8,
+  },
+  backArrow: {
+    fontSize: 28,
+    color: "#FFFFFF",
+    fontWeight: "600",
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  searchContainer: {
+    width: "100%",
+  },
+  searchInput: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 14,
-    padding: 15,
-    marginBottom: 16,
-
-    borderLeftWidth: 8,
-    borderLeftColor: "#E57200",
-
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    borderColor: "#FFFFFF",
+    borderWidth: 1.5,
+    color: "#232D4B",
   },
-  image: {
-    width: 140,
-    height: 140,
-    borderRadius: 14,
-    marginRight: 16,
-  },
-  infoContainer: {
+  contentArea: {
     flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    marginTop: -10,
+  },
+  scrollContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    marginBottom: 16,
+    overflow: "hidden",
+  },
+  cardImage: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
+  },
+  cardInfo: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   locationName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
     color: "#232D4B",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   capacityText: {
     fontSize: 16,
-    color: "#505050",
+    color: "#232D4B",
     marginBottom: 8,
   },
-  currentCapacity: {
-    fontWeight: "700",
-    color: "#E57200",
+  progressContainer: {
+    width: "100%",
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#E0E0E0",
+    overflow: "hidden",
   },
-  totalCapacity: {
-    fontWeight: "400",
-    color: "#505050",
-  },
-  percentage: {
-    fontWeight: "700",
-    color: "#232D4B",
-  },
-  progressBar: {
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#E57200",
   },
 });
-
-export default CapacityData;

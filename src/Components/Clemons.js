@@ -5,11 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   Image,
-  SafeAreaView,
   StatusBar,
 } from "react-native";
-import { ProgressBar } from "react-native-paper";
-import { LinearGradient } from "expo-linear-gradient";
+// Use SafeAreaView from react-native-safe-area-context
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import Clem1 from "../../assets/clem1.jpg";
 import Clem2 from "../../assets/clem2.png";
 import Clem3 from "../../assets/clem3.jpg";
@@ -20,13 +20,13 @@ export default function Clemons() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const openHours = [
-    { day: "Mon", hours: "8:00 AM – 12:00 AM" },
-    { day: "Tue", hours: "8:00 AM – 12:00 AM" },
-    { day: "Wed", hours: "8:00 AM – 12:00 AM" },
-    { day: "Thu", hours: "8:00 AM – 12:00 AM" },
-    { day: "Fri", hours: "8:00 AM – 9:00 PM" },
-    { day: "Sat", hours: "9:00 AM – 9:00 PM" },
-    { day: "Sun", hours: "9:00 AM – 11:00 PM" },
+    { day: "Monday", hours: "8:00 AM – 12:00 AM" },
+    { day: "Tuesday", hours: "8:00 AM – 12:00 AM" },
+    { day: "Wednesday", hours: "8:00 AM – 12:00 AM" },
+    { day: "Thursday", hours: "8:00 AM – 12:00 AM" },
+    { day: "Friday", hours: "8:00 AM – 9:00 PM" },
+    { day: "Saturday", hours: "9:00 AM – 9:00 PM" },
+    { day: "Sunday", hours: "9:00 AM – 11:00 PM" },
   ];
 
   useEffect(() => {
@@ -37,6 +37,7 @@ export default function Clemons() {
         );
         const result = await response.json();
         const finalResponse = result.body ? JSON.parse(result.body) : result;
+
         if (
           finalResponse &&
           finalResponse.data &&
@@ -47,7 +48,6 @@ export default function Clemons() {
             finalResponse.data.clemonslibrary.calculated_capacities;
           const maxCapacityPerFloor = 1000;
 
-          // Explicit mapping of camera keys to floor numbers
           const floorMapping = [
             { key: "camera1", name: "Floor 1", image: Clem1 },
             { key: "camera2_5_joint", name: "Floor 2", image: Clem2 },
@@ -56,12 +56,12 @@ export default function Clemons() {
           ];
 
           const formattedFloors = floorMapping.map((floor) => {
-            const capacity = calculatedCapacities[floor.key] || 0; // Default to 0 if capacity is missing
+            const capacity = calculatedCapacities[floor.key] || 0;
             return {
               id: floor.key,
               name: floor.name,
               image: floor.image,
-              capacity: capacity,
+              capacity,
               total: maxCapacityPerFloor,
             };
           });
@@ -77,174 +77,220 @@ export default function Clemons() {
     fetchFloorData();
   }, []);
 
+  const CustomProgressBar = ({ progress = 0 }) => {
+    const clamped = Math.max(Math.min(progress, 1), 0);
+    return (
+      <View style={styles.progressContainer}>
+        <View style={[styles.progressFill, { width: `${clamped * 100}%` }]} />
+      </View>
+    );
+  };
+
   return (
-    <LinearGradient colors={["#232D4B", "#0D1B33"]} style={styles.gradient}>
+    <View style={styles.root}>
+      {/* Make the StatusBar translucent & transparent so orange extends behind the notch */}
       <StatusBar
-        barStyle="light-content"
         translucent
         backgroundColor="transparent"
+        barStyle="light-content"
       />
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.header}>Clemons Library</Text>
-          <View style={styles.hoursCard}>
-            <Text style={styles.hoursTitle}>Open Hours</Text>
-            <View style={styles.hoursTable}>
-              {openHours.map((day, index) => (
-                <View key={index} style={styles.hoursRow}>
-                  <Text style={styles.dayText}>{day.day}</Text>
-                  <Text style={styles.hoursText}>{day.hours}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-          {errorMessage ? (
-            <Text style={styles.errorMessage}>{errorMessage}</Text>
-          ) : (
-            floors.map((floor) => {
-              const ratio = floor.capacity / floor.total;
-              const safeRatio = Math.max(Math.min(ratio, 1), 0);
-              const roundedRatio = parseFloat(safeRatio.toFixed(2));
-              return (
-                <View key={floor.id} style={styles.floorCard}>
-                  <Image source={floor.image} style={styles.image} />
-                  <View style={styles.infoContainer}>
-                    <Text style={styles.name}>{floor.name}</Text>
-                    <Text style={styles.capacityText}>
-                      <Text style={styles.currentCap}>{floor.capacity}</Text>/
-                      <Text style={styles.totalCap}>{floor.total}</Text> (
-                      {(safeRatio * 100).toFixed(0)}%)
-                    </Text>
-                    <ProgressBar
-                      progress={roundedRatio}
-                      color="#E57200"
-                      style={styles.progressBar}
-                    />
+
+      {/**
+       * Use SafeAreaView from react-native-safe-area-context
+       * ONLY for left & right edges, so the top remains fully orange.
+       */}
+      <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
+        {/* ORANGE HEADER */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Clemons Library</Text>
+        </View>
+
+        {/* WHITE CONTENT (SCROLL AREA) */}
+        <View style={styles.contentContainer}>
+          <ScrollView contentContainerStyle={styles.scrollInner}>
+            {/* OPEN HOURS CARD */}
+            <View style={styles.hoursCard}>
+              <Text style={styles.hoursTitle}>Open Hours</Text>
+              <View style={styles.hoursTable}>
+                {openHours.map((dayItem, index) => (
+                  <View key={index} style={styles.hoursRow}>
+                    <Text style={styles.dayText}>{dayItem.day}</Text>
+                    <Text style={styles.hoursText}>{dayItem.hours}</Text>
                   </View>
-                </View>
-              );
-            })
-          )}
-        </ScrollView>
+                ))}
+              </View>
+            </View>
+
+            {/* FLOORS */}
+            {errorMessage ? (
+              <Text style={styles.errorMessage}>{errorMessage}</Text>
+            ) : (
+              floors.map((floor) => {
+                const ratio = floor.capacity / floor.total;
+                const safeRatio = Math.max(Math.min(ratio, 1), 0);
+                const percentage = (safeRatio * 100).toFixed(0);
+
+                return (
+                  <View key={floor.id} style={styles.floorCard}>
+                    {/* Orange bar on the left side */}
+                    <View style={styles.leftBar} />
+                    {/* Floor Image */}
+                    <Image source={floor.image} style={styles.floorImage} />
+                    {/* Floor Info */}
+                    <View style={styles.infoContainer}>
+                      <Text style={styles.floorName}>{floor.name}</Text>
+                      <Text style={styles.capacityText}>
+                        {floor.capacity}/{floor.total} ({percentage}%)
+                      </Text>
+                      <CustomProgressBar progress={safeRatio} />
+                    </View>
+                  </View>
+                );
+              })
+            )}
+          </ScrollView>
+        </View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
+/* ========== STYLES ========== */
 const styles = StyleSheet.create({
-  gradient: {
+  // The top portion is orange, so it shows behind the notch
+  root: {
     flex: 1,
+    backgroundColor: "#E57200",
   },
+  // The SafeAreaView only applies left/right edges, leaving the top fully orange
   safeArea: {
     flex: 1,
   },
-  container: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 40,
-  },
+
+  /* ORANGE HEADER */
   header: {
-    fontSize: 36,
-    fontWeight: "900",
-    color: "#FFFFFF",
-    textAlign: "center",
-    marginBottom: 30,
-    textShadowColor: "#000000",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 6,
+    backgroundColor: "#E57200",
+    paddingTop: 60, // <-- Increase this if you want more space below the notch
+    paddingBottom: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
+  headerTitle: {
+    color: "#FFF",
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+
+  /* WHITE CONTENT CONTAINER */
+  contentContainer: {
+    flex: 1,
+    backgroundColor: "#FFF",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    overflow: "hidden",
+  },
+  scrollInner: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
+
+  /* OPEN HOURS CARD */
   hoursCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 14,
-    padding: 15,
+    borderWidth: 1,
+    borderColor: "#000000",
+    borderRadius: 10,
+    padding: 16,
+    marginTop: 16,
     marginBottom: 20,
-    borderLeftWidth: 8,
-    borderLeftColor: "#E57200",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
   },
   hoursTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#232D4B",
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000000",
     textAlign: "center",
     marginBottom: 10,
   },
-  hoursTable: {
-    flexDirection: "column",
-  },
+  hoursTable: {},
   hoursRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 5,
+    marginVertical: 3,
   },
   dayText: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#232D4B",
+    fontWeight: "500",
+    color: "#000000",
   },
   hoursText: {
     fontSize: 16,
-    color: "#505050",
+    color: "#777777",
   },
+
+  /* FLOOR CARDS */
+  floorCard: {
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#000000", // black border
+    borderRadius: 10,
+    marginBottom: 16,
+    position: "relative",
+    overflow: "hidden",
+  },
+  leftBar: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 8,
+    backgroundColor: "#E57200",
+  },
+  floorImage: {
+    width: 100,
+    height: 100,
+    resizeMode: "cover",
+    marginLeft: 8,
+    marginVertical: 8,
+    borderRadius: 6,
+  },
+  infoContainer: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    justifyContent: "center",
+  },
+  floorName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000000",
+    marginBottom: 6,
+  },
+  capacityText: {
+    fontSize: 16,
+    color: "#000000",
+    marginBottom: 8,
+  },
+
+  /* CUSTOM PROGRESS BAR */
+  progressContainer: {
+    height: 10,
+    borderWidth: 1,
+    borderColor: "#000000",
+    borderRadius: 5,
+    backgroundColor: "#FFFFFF",
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#E57200",
+  },
+
+  /* ERROR */
   errorMessage: {
     textAlign: "center",
     color: "red",
     fontSize: 16,
     marginVertical: 20,
-  },
-  floorCard: {
-    flexDirection: "row",
-    backgroundColor: "#ffffff",
-    marginBottom: 16,
-    borderRadius: 14,
-    padding: 15,
-    borderLeftWidth: 8,
-    borderLeftColor: "#E57200",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
-  },
-  image: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
-    marginRight: 16,
-  },
-  infoContainer: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#232D4B",
-    marginBottom: 6,
-  },
-  capacityText: {
-    fontSize: 16,
-    color: "#505050",
-    marginBottom: 8,
-  },
-  currentCap: {
-    fontWeight: "700",
-    color: "#E57200",
-  },
-  totalCap: {
-    fontWeight: "400",
-    color: "#505050",
-  },
-  progressBar: {
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
   },
 });

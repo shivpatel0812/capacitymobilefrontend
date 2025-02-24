@@ -1,9 +1,9 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
-import LocationList from "./LocationList"; // The main screen with the list of locations
-import Clemons from "./Clemons"; // Clemons Library detailed page
-import Shannon from "./Shannon"; // Shannon Library detailed page
+import LocationList from "./LocationList";
+import Clemons from "./Clemons";
+import Shannon from "./Shannon";
 
 const Stack = createStackNavigator();
 

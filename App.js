@@ -3,10 +3,12 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
+// Screens
 import Login from "./src/Components/Login";
 import CapacityData from "./src/Components/CapacityData";
 import Clemons from "./src/Components/Clemons";
 import Shannon from "./src/Components/Shannon";
+import AFC from "./src/Components/AFC";
 
 const Stack = createStackNavigator();
 
@@ -14,7 +16,7 @@ function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
-        {/* Login Screen (no header) */}
+        {/* Login Screen */}
         <Stack.Screen
           name="Login"
           component={Login}
@@ -23,46 +25,44 @@ function App() {
 
         {/* Capacity Data Screen */}
         <Stack.Screen
-          name="CapacityData"
+          name="CapacityData" // <-- We'll navigate to this name from Login or wherever
           component={CapacityData}
           options={{
-            headerTitle: "",
-            headerTransparent: true,
-            headerTintColor: "#fff",
-
-            // Label on the back button
-            headerBackTitle: "Login",
-            headerBackTitleVisible: true,
-
-            // Move arrow up by 10px (adjust as you like)
-            headerLeftContainerStyle: {
-              marginTop: 50,
-            },
+            headerShown: false,
           }}
         />
 
-        {/* Clemons Library Detailed Page */}
+        {/* Clemons Library Screen */}
         <Stack.Screen
-          name="Clemons"
+          name="Clemons" // <-- Must match what we use in `navigation.navigate("Clemons")`
           component={Clemons}
           options={{
             headerTitle: "",
             headerTransparent: true,
             headerTintColor: "#fff",
             headerBackTitleVisible: false,
-
-            // If you also want to move the arrow for Clemons screen:
-            headerLeftContainerStyle: {
-              marginTop: -10,
-            },
+            headerLeftContainerStyle: { marginTop: -10 },
           }}
         />
 
-        {/* Shannon Library Detailed Page */}
+        {/* Shannon Library Screen */}
         <Stack.Screen
-          name="Shannon"
+          name="Shannon" // <-- Must match `navigation.navigate("Shannon")`
           component={Shannon}
           options={{ title: "Shannon Library" }}
+        />
+
+        {/* AFC Gym Screen */}
+        <Stack.Screen
+          name="AFC" // <-- Must match `navigation.navigate("AFC")`
+          component={AFC}
+          options={{
+            headerTitle: "",
+            headerTransparent: true,
+            headerTintColor: "#fff",
+            headerBackTitleVisible: false,
+            headerLeftContainerStyle: { marginTop: -10 },
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

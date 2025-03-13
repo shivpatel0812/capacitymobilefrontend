@@ -7,7 +7,7 @@ import {
   Image,
   StatusBar,
 } from "react-native";
-// Use SafeAreaView from react-native-safe-area-context
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Clem1 from "../../assets/clem1.jpg";
@@ -88,27 +88,19 @@ export default function Clemons() {
 
   return (
     <View style={styles.root}>
-      {/* Make the StatusBar translucent & transparent so orange extends behind the notch */}
       <StatusBar
         translucent
         backgroundColor="transparent"
         barStyle="light-content"
       />
 
-      {/**
-       * Use SafeAreaView from react-native-safe-area-context
-       * ONLY for left & right edges, so the top remains fully orange.
-       */}
       <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
-        {/* ORANGE HEADER */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Clemons Library</Text>
         </View>
 
-        {/* WHITE CONTENT (SCROLL AREA) */}
         <View style={styles.contentContainer}>
           <ScrollView contentContainerStyle={styles.scrollInner}>
-            {/* OPEN HOURS CARD */}
             <View style={styles.hoursCard}>
               <Text style={styles.hoursTitle}>Open Hours</Text>
               <View style={styles.hoursTable}>
@@ -121,7 +113,6 @@ export default function Clemons() {
               </View>
             </View>
 
-            {/* FLOORS */}
             {errorMessage ? (
               <Text style={styles.errorMessage}>{errorMessage}</Text>
             ) : (
@@ -132,11 +123,8 @@ export default function Clemons() {
 
                 return (
                   <View key={floor.id} style={styles.floorCard}>
-                    {/* Orange bar on the left side */}
                     <View style={styles.leftBar} />
-                    {/* Floor Image */}
                     <Image source={floor.image} style={styles.floorImage} />
-                    {/* Floor Info */}
                     <View style={styles.infoContainer}>
                       <Text style={styles.floorName}>{floor.name}</Text>
                       <Text style={styles.capacityText}>
@@ -155,22 +143,17 @@ export default function Clemons() {
   );
 }
 
-/* ========== STYLES ========== */
 const styles = StyleSheet.create({
-  // The top portion is orange, so it shows behind the notch
   root: {
     flex: 1,
     backgroundColor: "#E57200",
   },
-  // The SafeAreaView only applies left/right edges, leaving the top fully orange
   safeArea: {
     flex: 1,
   },
-
-  /* ORANGE HEADER */
   header: {
     backgroundColor: "#E57200",
-    paddingTop: 60, // <-- Increase this if you want more space below the notch
+    paddingTop: 60,
     paddingBottom: 16,
     alignItems: "center",
     justifyContent: "center",
@@ -180,8 +163,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
-
-  /* WHITE CONTENT CONTAINER */
   contentContainer: {
     flex: 1,
     backgroundColor: "#FFF",
@@ -193,8 +174,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 20,
   },
-
-  /* OPEN HOURS CARD */
   hoursCard: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
@@ -226,13 +205,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#777777",
   },
-
-  /* FLOOR CARDS */
   floorCard: {
     flexDirection: "row",
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#000000", // black border
+    borderColor: "#000000",
     borderRadius: 10,
     marginBottom: 16,
     position: "relative",
@@ -271,8 +248,6 @@ const styles = StyleSheet.create({
     color: "#000000",
     marginBottom: 8,
   },
-
-  /* CUSTOM PROGRESS BAR */
   progressContainer: {
     height: 10,
     borderWidth: 1,
@@ -285,8 +260,6 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: "#E57200",
   },
-
-  /* ERROR */
   errorMessage: {
     textAlign: "center",
     color: "red",

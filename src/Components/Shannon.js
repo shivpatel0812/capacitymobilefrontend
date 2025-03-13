@@ -28,7 +28,6 @@ export default function Shannon() {
         const response = await fetch(
           "http://172.16.102.44:3001/api/latest-capacities"
         );
-
         const result = await response.json();
 
         console.log("API Response:", result);
@@ -55,11 +54,10 @@ export default function Shannon() {
           const formattedFloors = Object.entries(floorResults)
             .filter(([floorKey]) => floorKey !== "floor_5") // Filter out floor_5
             .map(([floorKey, capacity]) => {
-              const floorNumber = floorKey.split("_")[1]; // "floor_1" -> "1"
+              const floorNumber = floorKey.split("_")[1];
               const floorName = `Floor ${floorNumber}`;
               const floorImage = floorImageMap[floorKey] || Shannon1;
 
-              // Force capacity to be an integer, then clamp between 0 and maxCapacityPerFloor
               const capacityAsInt = parseInt(capacity, 10) || 0;
               const sanitizedCapacity = Math.min(
                 Math.max(0, capacityAsInt),
@@ -121,7 +119,6 @@ export default function Shannon() {
                 %)
               </Text>
               <ProgressBar
-                // Provide a fraction between 0 and 1 for the progress prop
                 progress={Math.min(floor.capacity / floor.total, 1)}
                 color="#0056D2"
                 style={styles.progressBar}

@@ -13,6 +13,9 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
+// 1. Import our config list
+import { ALLOWED_LOCATIONS } from "./locationConfig";
+
 import ClemonsImage from "../../assets/Clemons-location.png";
 import ShannonImage from "../../assets/2f984490-663c-4515-b7e0-03acbfb328f2.sized-1000x1000.jpg";
 import RiceHallImage from "../../assets/ricehall.png";
@@ -38,14 +41,18 @@ function CapacityData() {
         }
 
         const parsed = await response.json();
+        // Some APIs return data in a string under .body. So we check for that:
         const finalResponse = parsed.body ? JSON.parse(parsed.body) : parsed;
         const { data } = finalResponse || {};
         if (!data) {
           throw new Error("Unexpected API structure: missing 'data' field.");
         }
 
-        const { ricehall, clemonslibrary, shannon, onecameratest } = data;
+        // 2. Destructure "afctest" from the data so we can grab the AFC total capacity
+        const { ricehall, clemonslibrary, shannon, onecameratest, afctest } =
+          data;
 
+        // Build a single object with each location’s capacity
         const formattedCapacities = {
           Clemons: {
             current: clemonslibrary?.calculated_capacities?.total_capacity ?? 0,
@@ -60,8 +67,10 @@ function CapacityData() {
             total: 400,
           },
           AFC: {
-            current: 0, // Not in API
-            total: 1000,
+            // For “current,” you can decide whether to use people_in or a combined total
+            current: afctest?.people_in ?? 0,
+            // For “total,” we’ll use the total_capacity from afctest, defaulting to 1000 if it’s missing
+            total: afctest?.total_capacity ?? 1000,
           },
           OneCamRaTest: {
             current: onecameratest?.total_capacity ?? 0,
@@ -79,6 +88,7 @@ function CapacityData() {
     fetchLatestCapacities();
   }, []);
 
+  // 3. Full list of potential locations
   const locations = [
     { name: "Clemons", image: ClemonsImage, totalCapacity: 2000 },
     { name: "Shannon", image: ShannonImage, totalCapacity: 2000 },
@@ -87,9 +97,12 @@ function CapacityData() {
     { name: "OneCamRaTest", image: OneCamRaTestImage, totalCapacity: 500 },
   ];
 
-  const filteredLocations = locations.filter((loc) =>
-    loc.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // 4. Filter by allowed locations and search query
+  const filteredLocations = locations
+    .filter((loc) => ALLOWED_LOCATIONS.includes(loc.name))
+    .filter((loc) =>
+      loc.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -257,5 +270,11 @@ const styles = StyleSheet.create({
   progressFill: {
     height: "100%",
     backgroundColor: "#E57200",
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    fontSize: 16,
+    marginTop: 10,
   },
 });

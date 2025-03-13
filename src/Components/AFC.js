@@ -1,4 +1,3 @@
-// src/Components/AFC.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -10,8 +9,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Replace these images with your actual paths
-import BasketballImage from "../../assets/basketball.jpg";
 import Floor1Image from "../../assets/afc2.jpg";
 import Floor2Image from "../../assets/afc2.jpg";
 
@@ -28,22 +25,16 @@ export default function AFC() {
         const result = await response.json();
         const finalResponse = result.body ? JSON.parse(result.body) : result;
 
-        // Ensure we find the 'afccapacity' block
         if (
           finalResponse &&
           finalResponse.data &&
           finalResponse.data.afccapacity
         ) {
           const capacities = finalResponse.data.afccapacity;
-          const maxCapacity = 1000; // your chosen max
+          const maxCapacity = 1000;
 
-          // Only these 3
+          // Basketball is removed—only first_floor and second_floor remain
           const floorMapping = [
-            {
-              key: "basketball",
-              name: "Basketball Court",
-              image: BasketballImage,
-            },
             { key: "first_floor", name: "First Floor", image: Floor1Image },
             { key: "second_floor", name: "Second Floor", image: Floor2Image },
           ];
@@ -69,7 +60,6 @@ export default function AFC() {
     fetchAfcData();
   }, []);
 
-  // Custom progress bar
   const CustomProgressBar = ({ progress = 0 }) => {
     const clamped = Math.max(Math.min(progress, 1), 0);
     return (
@@ -81,7 +71,6 @@ export default function AFC() {
 
   return (
     <View style={styles.root}>
-      {/* Make the notch area / status bar bright on iOS */}
       <StatusBar
         translucent
         backgroundColor="transparent"
@@ -98,17 +87,13 @@ export default function AFC() {
               <Text style={styles.errorMessage}>{errorMessage}</Text>
             ) : (
               floors.map((floor) => {
-                // Calculate ratio/percentage
                 const ratio = floor.capacity / floor.total;
                 const safeRatio = Math.max(Math.min(ratio, 1), 0);
                 const percentage = (safeRatio * 100).toFixed(0);
 
                 return (
                   <View key={floor.id} style={styles.floorCard}>
-                    {/* Full-width image at top */}
                     <Image source={floor.image} style={styles.floorImage} />
-
-                    {/* Info below image */}
                     <View style={styles.cardInfo}>
                       <Text style={styles.floorName}>{floor.name}</Text>
                       <Text style={styles.capacityText}>
@@ -127,11 +112,10 @@ export default function AFC() {
   );
 }
 
-// =========== STYLES ============
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#E57200", // orange top
+    backgroundColor: "#E57200",
   },
   safeArea: {
     flex: 1,
@@ -148,7 +132,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
-  // White content area
   contentContainer: {
     flex: 1,
     backgroundColor: "#FFF",
@@ -160,7 +143,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 20,
   },
-  // Each floor card => looks like your library capacity card
   floorCard: {
     backgroundColor: "#FFF",
     borderRadius: 10,
@@ -169,13 +151,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: "hidden",
   },
-  // Full-width top image
   floorImage: {
     width: "100%",
-    height: 220, // bigger image
+    height: 220,
     resizeMode: "cover",
   },
-  // Info area under the image
   cardInfo: {
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -191,7 +171,6 @@ const styles = StyleSheet.create({
     color: "#232D4B",
     marginBottom: 10,
   },
-  // Progress bar
   progressContainer: {
     width: "100%",
     height: 12,
@@ -203,7 +182,6 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: "#E57200",
   },
-  // Error text
   errorMessage: {
     textAlign: "center",
     color: "red",

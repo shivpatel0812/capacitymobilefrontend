@@ -1,9 +1,7 @@
-// App.js
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
-// Screens
 import Login from "./src/Components/Login";
 import CapacityData from "./src/Components/CapacityData";
 import Clemons from "./src/Components/Clemons";
@@ -25,7 +23,7 @@ function App() {
 
         {/* Capacity Data Screen */}
         <Stack.Screen
-          name="CapacityData" // <-- We'll navigate to this name from Login or wherever
+          name="CapacityData"
           component={CapacityData}
           options={{
             headerShown: false,
@@ -34,7 +32,7 @@ function App() {
 
         {/* Clemons Library Screen */}
         <Stack.Screen
-          name="Clemons" // <-- Must match what we use in `navigation.navigate("Clemons")`
+          name="Clemons"
           component={Clemons}
           options={{
             headerTitle: "",
@@ -47,14 +45,14 @@ function App() {
 
         {/* Shannon Library Screen */}
         <Stack.Screen
-          name="Shannon" // <-- Must match `navigation.navigate("Shannon")`
+          name="Shannon"
           component={Shannon}
           options={{ title: "Shannon Library" }}
         />
 
         {/* AFC Gym Screen */}
         <Stack.Screen
-          name="AFC" // <-- Must match `navigation.navigate("AFC")`
+          name="AFC"
           component={AFC}
           options={{
             headerTitle: "",

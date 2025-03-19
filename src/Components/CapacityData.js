@@ -68,9 +68,9 @@ function CapacityData() {
           },
           AFC: {
             // For “current,” you can decide whether to use people_in or a combined total
-            current: afctest?.people_in ?? 0,
+            current: afctest?.total_capacity ?? 0,
             // For “total,” we’ll use the total_capacity from afctest, defaulting to 1000 if it’s missing
-            total: afctest?.total_capacity ?? 1000,
+            total: 1000,
           },
           OneCamRaTest: {
             current: onecameratest?.total_capacity ?? 0,

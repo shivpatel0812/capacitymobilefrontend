@@ -3161,6 +3161,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"clamp@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "clamp@npm:1.0.1"
+  checksum: 10c0/8f95ccbc5d646a98c1d690bce820f3d060a5267242083e8994f70dc504ce441dbc7b8ef13b93819129fc166e7a5b6abd320f109bdba0f49b8dcc794710987c97
+  languageName: node
+  linkType: hard
+
 "clean-stack@npm:^2.0.0":
   version: 2.2.0
   resolution: "clean-stack@npm:2.2.0"
@@ -3365,6 +3372,15 @@ __metadata:
     safe-buffer: "npm:5.2.1"
     vary: "npm:~1.1.2"
   checksum: 10c0/804d3c8430939f4fd88e5128333f311b4035f6425a7f2959d74cfb5c98ef3a3e3e18143208f3f9d0fcae4cd3bcf3d2fbe525e0fcb955e6e146e070936f025a24
+  languageName: node
+  linkType: hard
+
+"concat-color-matrices@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "concat-color-matrices@npm:1.0.0"
+  dependencies:
+    invariant: "npm:^2.2.4"
+  checksum: 10c0/30311f564ffbf06e8d4ca2493f9cb4058d05d2b30ea384e63d32b9138a49873ab2ccb98940108744e015efb60262af274f469818c406dabdcd188c65ea31157d
   languageName: node
   linkType: hard
 
@@ -6020,6 +6036,7 @@ __metadata:
     react: "npm:18.3.1"
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.5"
+    react-native-color-matrix-image-filters: "npm:^7.0.2"
     react-native-gesture-handler: "npm:~2.20.2"
     react-native-paper: "npm:^5.12.5"
     react-native-reanimated: "npm:~3.16.1"
@@ -6786,6 +6803,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-color-matrix-image-filters@npm:^7.0.2":
+  version: 7.0.2
+  resolution: "react-native-color-matrix-image-filters@npm:7.0.2"
+  dependencies:
+    concat-color-matrices: "npm:^1.0.0"
+    rn-color-matrices: "npm:^4.1.0"
+    ts-tiny-invariant: "npm:^2.0.5"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/6e0fe772603890da1f66ac6afb3445bef20ab4fe80a054c2fb345a2a145b43881845211eb96a48795142ebafdc3f0078516f48268048f4bfbc8745ffe2f03f44
+  languageName: node
+  linkType: hard
+
 "react-native-gesture-handler@npm:~2.20.2":
   version: 2.20.2
   resolution: "react-native-gesture-handler@npm:2.20.2"
@@ -7215,6 +7246,17 @@ __metadata:
   bin:
     rimraf: ./bin.js
   checksum: 10c0/f1e646f8c567795f2916aef7aadf685b543da6b9a53e482bb04b07472c7eef2b476045ba1e29f401c301c66b630b22b815ab31fdd60c5e1ae6566ff523debf45
+  languageName: node
+  linkType: hard
+
+"rn-color-matrices@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "rn-color-matrices@npm:4.1.0"
+  dependencies:
+    clamp: "npm:^1.0.1"
+  peerDependencies:
+    react-native: "*"
+  checksum: 10c0/6f038be5f6c479360f8440cd5c08edf7134b0a2daefc0379092ddc87843253b9cafde6d8216a367207523a1ff70302a63c58401df60b36517b1e0df60a701f72
   languageName: node
   linkType: hard
 
@@ -7968,6 +8010,13 @@ __metadata:
   version: 0.1.13
   resolution: "ts-interface-checker@npm:0.1.13"
   checksum: 10c0/232509f1b84192d07b81d1e9b9677088e590ac1303436da1e92b296e9be8e31ea042e3e1fd3d29b1742ad2c959e95afe30f63117b8f1bc3a3850070a5142fea7
+  languageName: node
+  linkType: hard
+
+"ts-tiny-invariant@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "ts-tiny-invariant@npm:2.0.5"
+  checksum: 10c0/3e082dfb29b2e955e7022b26942552b96c9dcf5772040e08cb984f5f7d4e1b52673aa75552bca6d30eed16c5873e8e88584f98a25560272e0ccf6fb075e26560
   languageName: node
   linkType: hard
 

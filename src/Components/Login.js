@@ -8,29 +8,29 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-//test2
-function Login() {
+
+export default function Login() {
   const navigation = useNavigation();
-
-  const handleLoginClick = () => {
-    navigation.navigate("CapacityData");
-  };
-
   return (
     <ImageBackground
       source={require("../../assets/rotunda.jpg")}
       style={styles.background}
       imageStyle={{ opacity: 0.8 }}
+      blurRadius={3}
     >
+      <View style={styles.overlay} />
       <TouchableOpacity
         style={styles.arrowContainer}
         onPress={() => navigation.goBack()}
       >
-        <Ionicons name="arrow-back" size={28} color="#FFFFFF" />
+        <Ionicons name="arrow-back" size={28} color="#fff" />
       </TouchableOpacity>
       <View style={styles.contentContainer}>
         <Text style={styles.title}>UVA AI Capacity Tracker</Text>
-        <TouchableOpacity style={styles.button} onPress={handleLoginClick}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("CapacityData")}
+        >
           <Text style={styles.buttonText}>Enter</Text>
         </TouchableOpacity>
       </View>
@@ -44,38 +44,45 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
   arrowContainer: {
     position: "absolute",
     top: 50,
     left: 20,
+    zIndex: 2,
   },
   contentContainer: {
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-    marginTop: -250,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "bold",
-    color: "#FFFFFF",
+    color: "#fff",
     textAlign: "center",
     marginBottom: 40,
-    textShadowColor: "#000000",
+    textShadowColor: "#000",
     textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    textShadowRadius: 6,
   },
   button: {
     backgroundColor: "#E57200",
-    paddingVertical: 15,
-    paddingHorizontal: 50,
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 60,
+    borderRadius: 30,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   buttonText: {
-    fontSize: 22,
-    color: "#FFFFFF",
-    fontWeight: "bold",
+    fontSize: 20,
+    color: "#fff",
+    fontWeight: "600",
   },
 });
-
-export default Login;

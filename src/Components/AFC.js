@@ -1,191 +1,151 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Image,
   StatusBar,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import HoopImage from "../../assets/basketball.jpg";
 
-import Floor1Image from "../../assets/afc2.jpg";
-import Floor2Image from "../../assets/afc2.jpg";
+export default function HoopCapacity() {
+  const navigation = useNavigation();
 
-export default function AFC() {
-  const [floors, setFloors] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
+  // hide the default header to avoid double arrows
+  useLayoutEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
+
+  const [hoopCap, setHoopCap] = useState(0);
+  const totalCap = 200;
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchAfcData = async () => {
+    async function fetchHoop() {
       try {
-        const response = await fetch(
+        const res = await fetch(
           "https://ykfoxx9h9a.execute-api.us-east-2.amazonaws.com/reactdeploy/nodemongo"
         );
-        const result = await response.json();
-        const finalResponse = result.body ? JSON.parse(result.body) : result;
-
-        if (
-          finalResponse &&
-          finalResponse.data &&
-          finalResponse.data.afccapacity
-        ) {
-          const capacities = finalResponse.data.afccapacity;
-          const maxCapacity = 1000;
-
-          // Basketball is removed—only first_floor and second_floor remain
-          const floorMapping = [
-            { key: "first_floor", name: "First Floor", image: Floor1Image },
-            { key: "second_floor", name: "Second Floor", image: Floor2Image },
-          ];
-
-          const formattedFloors = floorMapping.map((f) => ({
-            id: f.key,
-            name: f.name,
-            image: f.image,
-            capacity: capacities[f.key] || 0,
-            total: maxCapacity,
-          }));
-
-          setFloors(formattedFloors);
-        } else {
-          setErrorMessage("No AFC floor data found in API response.");
-        }
-      } catch (error) {
-        console.error("Error fetching AFC data:", error);
-        setErrorMessage("Error fetching AFC data.");
+        const json = await res.json();
+        const body = json.body ? JSON.parse(json.body) : json;
+        const hoop = body.data.afctest?.last_hoop_capacity;
+        setHoopCap(typeof hoop === "number" ? hoop : 0);
+      } catch (e) {
+        console.warn(e);
+        setError("Error loading hoop data.");
       }
-    };
-
-    fetchAfcData();
+    }
+    fetchHoop();
   }, []);
 
-  const CustomProgressBar = ({ progress = 0 }) => {
-    const clamped = Math.max(Math.min(progress, 1), 0);
+  const ProgressBar = ({ progress }) => {
+    const pct = Math.max(0, Math.min(1, progress));
     return (
-      <View style={styles.progressContainer}>
-        <View style={[styles.progressFill, { width: `${clamped * 100}%` }]} />
+      <View style={styles.barContainer}>
+        <View style={[styles.barFill, { width: `${pct * 100}%` }]} />
       </View>
     );
   };
 
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.error}>{error}</Text>
+      </View>
+    );
+  }
+
+  const percentage = ((hoopCap / totalCap) * 100).toFixed(0);
+
   return (
     <View style={styles.root}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
-      <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>AFC Gym</Text>
-        </View>
+      <StatusBar barStyle="light-content" />
 
-        <View style={styles.contentContainer}>
-          <ScrollView contentContainerStyle={styles.scrollInner}>
-            {errorMessage ? (
-              <Text style={styles.errorMessage}>{errorMessage}</Text>
-            ) : (
-              floors.map((floor) => {
-                const ratio = floor.capacity / floor.total;
-                const safeRatio = Math.max(Math.min(ratio, 1), 0);
-                const percentage = (safeRatio * 100).toFixed(0);
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.backArrow}>&larr;</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>AFC</Text>
+      </View>
 
-                return (
-                  <View key={floor.id} style={styles.floorCard}>
-                    <Image source={floor.image} style={styles.floorImage} />
-                    <View style={styles.cardInfo}>
-                      <Text style={styles.floorName}>{floor.name}</Text>
-                      <Text style={styles.capacityText}>
-                        {floor.capacity}/{floor.total} ({percentage}%)
-                      </Text>
-                      <CustomProgressBar progress={safeRatio} />
-                    </View>
-                  </View>
-                );
-              })
-            )}
-          </ScrollView>
-        </View>
+      <SafeAreaView style={styles.safe}>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          <View style={styles.card}>
+            <Image source={HoopImage} style={styles.image} />
+            <Text style={styles.title}>Basketball Court</Text>
+            <Text style={styles.capacity}>
+              {hoopCap}/{totalCap} ({percentage}%)
+            </Text>
+            <ProgressBar progress={hoopCap / totalCap} />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: "#E57200",
-  },
-  safeArea: {
-    flex: 1,
-  },
+  root: { flex: 1, backgroundColor: "#E57200" },
   header: {
     backgroundColor: "#E57200",
-    paddingTop: 60,
-    paddingBottom: 16,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    paddingTop: Platform.OS === "ios" ? 40 : 20,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+  },
+  backArrow: {
+    fontSize: 28,
+    color: "#FFFFFF",
+    marginRight: 12,
   },
   headerTitle: {
-    color: "#FFF",
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
-  contentContainer: {
+  safe: {
     flex: 1,
     backgroundColor: "#FFF",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    overflow: "hidden",
   },
-  scrollInner: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
-  floorCard: {
+  scroll: { padding: 16 },
+  card: {
     backgroundColor: "#FFF",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#DDDDDD",
-    marginBottom: 16,
+    borderRadius: 12,
+    marginBottom: 20,
     overflow: "hidden",
+    elevation: 2,
   },
-  floorImage: {
-    width: "100%",
-    height: 220,
-    resizeMode: "cover",
-  },
-  cardInfo: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  floorName: {
+  image: { width: "100%", height: 180, resizeMode: "cover" },
+  title: {
     fontSize: 20,
     fontWeight: "700",
     color: "#232D4B",
-    marginBottom: 6,
+    margin: 12,
   },
-  capacityText: {
+  capacity: {
     fontSize: 16,
     color: "#232D4B",
-    marginBottom: 10,
+    marginHorizontal: 12,
+    marginBottom: 8,
   },
-  progressContainer: {
-    width: "100%",
+  barContainer: {
     height: 12,
+    backgroundColor: "#EEE",
     borderRadius: 6,
-    backgroundColor: "#E0E0E0",
+    marginHorizontal: 12,
+    marginBottom: 12,
     overflow: "hidden",
   },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#E57200",
-  },
-  errorMessage: {
-    textAlign: "center",
-    color: "red",
-    fontSize: 16,
-    marginTop: 20,
-  },
+  barFill: { height: "100%", backgroundColor: "#FFF" },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  error: { color: "red", fontSize: 16 },
 });

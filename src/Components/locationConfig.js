@@ -1,2 +1,2 @@
 // locationConfig.js
-export const ALLOWED_LOCATIONS = ["AFC"];
+export const ALLOWED_LOCATIONS = ["AFC", "Clemons", "Shannon"];

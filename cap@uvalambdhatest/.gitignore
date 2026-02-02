@@ -1,0 +1,24 @@
+.env
+.env.local
+*.pyc
+__pycache__/
+*.zip
+.DS_Store
+test_data/
+*.dist-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node dependencies
+node_modules/
+
+# Python dependencies (if afctest is a deployment package, consider excluding vendor deps)
+# Uncomment if you want to exclude installed packages:
+# afctest/pymongo/
+# afctest/dnspython-2.7.0.dist-info/
+# afctest/pymongo-4.10.1.dist-info/
+# afctest/bson/
+# afctest/dns/
+# afctest/gridfs/
+

@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# Local env files
+.env
+.env*.local
+.env.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Python
+*.pyc
+__pycache__/
+*.dist-info/
+.pytest_cache/
+.coverage
+htmlcov/
+*.zip
+
+# Xcode
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+project.xcworkspace
+.xcode.env.local
+
+# Bundle artifacts
+*.jsbundle
+
+# CocoaPods
+/Pods/
+
+# Test data
+cap@uvalambdhatest/test_data/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+

@@ -116,19 +116,39 @@ function CapacityData() {
               const totalCap = capacities[loc.name]?.total ?? loc.totalCapacity;
               const ratio = totalCap > 0 ? currentCap / totalCap : 0;
               const percentage = Math.min(Math.max(ratio, 0), 1) * 100;
+              const isComingSoon = loc.name === "Shannon" || loc.name === "Clemons";
+              const isDisabled = loc.name === "Shannon" || loc.name === "Clemons";
               return (
                 <TouchableOpacity
                   key={index}
-                  style={styles.card}
+                  style={[
+                    styles.card,
+                    isDisabled && styles.cardDisabled
+                  ]}
                   onPress={() => {
-                    if (loc.name !== "Shannon") {
+                    if (!isDisabled) {
                       navigation.navigate(loc.name);
                     }
                   }}
+                  disabled={isDisabled}
+                  activeOpacity={isDisabled ? 1 : 0.7}
                 >
-                  <Image source={loc.image} style={styles.cardImage} />
+                  <Image 
+                    source={loc.image} 
+                    style={[
+                      styles.cardImage,
+                      isDisabled && styles.cardImageDisabled
+                    ]} 
+                  />
                   <View style={styles.cardInfo}>
-                    <Text style={styles.locationName}>{loc.name}</Text>
+                    <View style={styles.nameRow}>
+                      <Text style={styles.locationName}>{loc.name}</Text>
+                      {isComingSoon && (
+                        <View style={styles.comingSoonBadge}>
+                          <Text style={styles.comingSoonText}>Coming Soon</Text>
+                        </View>
+                      )}
+                    </View>
                     <Text style={styles.capacityText}>
                       {currentCap}/{totalCap} ({percentage.toFixed(0)}%)
                     </Text>
@@ -214,20 +234,45 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: "hidden",
   },
+  cardDisabled: {
+    opacity: 0.6,
+  },
   cardImage: {
     width: "100%",
     height: 200,
     resizeMode: "cover",
   },
+  cardImageDisabled: {
+    opacity: 0.7,
+  },
   cardInfo: {
     paddingHorizontal: 16,
     paddingVertical: 12,
+  },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 4,
+    flexWrap: "wrap",
   },
   locationName: {
     fontSize: 18,
     fontWeight: "700",
     color: "#232D4B",
-    marginBottom: 4,
+    flex: 1,
+  },
+  comingSoonBadge: {
+    backgroundColor: "#E57200",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  comingSoonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
   capacityText: {
     fontSize: 16,

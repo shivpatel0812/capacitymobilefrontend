@@ -36,6 +36,7 @@ import lambda_function as lf_module
 import config as cfg_module
 import capacity as cap_module
 from mongodb_client import afctest, afccapacity
+import importlib
 
 
 class MockContext:
@@ -65,6 +66,28 @@ class TestRunner:
         afctest.clear()
         afccapacity.clear()
     
+    def restore_test_data(self, cameras):
+        """Restore original test data after edge case tests"""
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        test_data_dir = Path(__file__).parent / "test_data"
+        
+        test_data_samples = {
+            "hoopcamera": {"total_capacity": 15, "unique_count": 15, "timestamp": f"{today}T12:00:00Z"},
+            "enter": {"in": 5, "out": 2, "timestamp": f"{today}T12:00:00Z"},
+            "exit": {"out": 2, "count": 2, "timestamp": f"{today}T12:00:00Z"},
+            "basement": {"in": 3, "out": 1, "timestamp": f"{today}T12:00:00Z"},
+            "weightroom": {"in": 4, "out": 1, "timestamp": f"{today}T12:00:00Z"},
+            "secondfloorcam1": {"in": 3, "out": 1, "timestamp": f"{today}T12:00:00Z"},
+            "secondfloorcam2": {"in": 5, "out": 2, "in2": 2, "out2": 2, "timestamp": f"{today}T12:00:00Z"},
+        }
+        
+        for camera in cameras:
+            if camera in test_data_samples:
+                camera_dir = test_data_dir / camera
+                test_file = camera_dir / f"{today}_120000.json"
+                with open(test_file, 'w') as f:
+                    json.dump(test_data_samples[camera], f, indent=2)
+    
     def get_capacity(self):
         """Get current capacity from test state"""
         return afctest.get("capacity", {})
@@ -73,7 +96,7 @@ class TestRunner:
         """Get capacity history"""
         return list(afccapacity)
     
-    def _ensure_test_data_exists(self, cameras):
+    def _ensure_test_data_exists(self, cameras, edge_case=None):
         """Ensure test data files exist for given cameras with today's date"""
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         test_data_dir = Path(__file__).parent / "test_data"
@@ -89,6 +112,10 @@ class TestRunner:
             "secondfloorcam2": {"in": 5, "out": 2, "in2": 2, "out2": 2, "timestamp": f"{today}T12:00:00Z"},
         }
         
+        # Edge case: negative capacity (more exits than enters)
+        if edge_case == "negative_capacity":
+            test_data_samples["basement"] = {"in": 1, "out": 5, "timestamp": f"{today}T12:00:00Z"}
+        
         for camera in cameras:
             if camera in test_data_samples:
                 camera_dir = test_data_dir / camera
@@ -96,17 +123,20 @@ class TestRunner:
                 
                 # Create a test file with today's date
                 test_file = camera_dir / f"{today}_120000.json"
-                if not test_file.exists():
+                # For edge cases, overwrite existing file
+                if not test_file.exists() or edge_case:
                     with open(test_file, 'w') as f:
                         json.dump(test_data_samples[camera], f, indent=2)
     
-    def test(self, name, cameras, expected_results=None, description=""):
+    def test(self, name, cameras, expected_results=None, description="", edge_case=None):
         """Run a test with specified camera configuration"""
         print(f"\n{'='*60}")
         print(f"TEST: {name}")
         if description:
             print(f"Description: {description}")
         print(f"Active Cameras: {cameras}")
+        if edge_case:
+            print(f"Edge Case: {edge_case}")
         print(f"{'='*60}")
         
         # Reset state
@@ -125,9 +155,12 @@ class TestRunner:
         cfg_module.ENABLE_FLOOR1 = "enter" in cameras
         cfg_module.ENABLE_FLOOR2 = ("secondfloorcam1" in cameras) or ("secondfloorcam2" in cameras)
         
+        # Reload capacity module to pick up new config values
+        importlib.reload(cap_module)
+        
         try:
             # Create test files with today's date if they don't exist
-            self._ensure_test_data_exists(cameras)
+            self._ensure_test_data_exists(cameras, edge_case=edge_case)
             
             # Run lambda handler
             event = {}
@@ -185,6 +218,10 @@ class TestRunner:
             self.tests_failed += 1
             return False
         finally:
+            # Restore test data if edge case was used
+            if edge_case:
+                self.restore_test_data(cameras)
+            
             # Restore original cameras
             cfg_module.ACTIVE_CAMERAS[:] = original_cameras
             cfg_module.ENABLE_HOOP = "hoopcamera" in original_cameras
@@ -207,6 +244,7 @@ class TestRunner:
         self.test(
             "Test 1: Only Basketball Court (hoopcamera)",
             ["hoopcamera"],
+            expected_results={"basketball_court": 15},
             description="Test tracking only basketball court capacity"
         )
         
@@ -214,6 +252,7 @@ class TestRunner:
         self.test(
             "Test 2: Enter Camera Only (enter provides both in/out)",
             ["enter"],
+            expected_results={"floor1": 3},  # 5 (in) - 2 (out) = 3
             description="Test floor1 tracking with enter camera only"
         )
         
@@ -221,13 +260,16 @@ class TestRunner:
         self.test(
             "Test 3: Enter + Exit Cameras",
             ["enter", "exit"],
+            expected_results={"floor1": 3},  # 5 (in) - 2 (exit) = 3
             description="Test floor1 tracking with separate enter/exit cameras"
         )
         
         # Test 4: Basketball + Enter + Exit
+        # floor1_net = 5 - 2 = 3, subtract basketball_court_delta (15), so floor1_delta = -12, clamped to 0
         self.test(
             "Test 4: Basketball Court + Floor 1 (Enter + Exit)",
             ["hoopcamera", "enter", "exit"],
+            expected_results={"basketball_court": 15, "floor1": 0},
             description="Test basketball court and floor1 together"
         )
         
@@ -235,6 +277,7 @@ class TestRunner:
         self.test(
             "Test 5: Basketball + Floor 1 + Basement",
             ["hoopcamera", "enter", "exit", "basement"],
+            expected_results={"basketball_court": 15, "floor1": 0, "basement": 2},  # 3 (in) - 1 (out) = 2
             description="Test with basement tracking"
         )
         
@@ -242,6 +285,7 @@ class TestRunner:
         self.test(
             "Test 6: All Cameras (including Weightroom)",
             ["hoopcamera", "enter", "exit", "basement", "weightroom"],
+            expected_results={"basketball_court": 15, "floor1": 0, "basement": 2, "weightroom": 3},  # 4 (in) - 1 (out) = 3
             description="Test with weightroom tracking"
         )
         
@@ -249,6 +293,7 @@ class TestRunner:
         self.test(
             "Test 7: Only Basement",
             ["basement"],
+            expected_results={"basement": 2},  # 3 (in) - 1 (out) = 2
             description="Test independent basement tracking"
         )
         
@@ -256,13 +301,16 @@ class TestRunner:
         self.test(
             "Test 8: Only Weightroom",
             ["weightroom"],
+            expected_results={"weightroom": 3},  # 4 (in) - 1 (out) = 3
             description="Test independent weightroom tracking"
         )
         
         # Test 9: Floor 2 cameras only
+        # cam1: 3 - 1 = 2, cam2: (5+2) - (2+2) = 3, total = 5
         self.test(
             "Test 9: Floor 2 Cameras Only",
             ["secondfloorcam1", "secondfloorcam2"],
+            expected_results={"floor2": 5},
             description="Test floor2 tracking with both cameras"
         )
         
@@ -270,21 +318,52 @@ class TestRunner:
         self.test(
             "Test 10: All Cameras (Full Configuration)",
             ["hoopcamera", "enter", "exit", "basement", "weightroom", "secondfloorcam1", "secondfloorcam2"],
+            expected_results={"basketball_court": 15, "floor1": 0, "floor2": 5, "basement": 2, "weightroom": 3},
             description="Test with all cameras enabled"
         )
         
         # Test 11: Remove exit camera (enter must provide both in/out)
+        # floor1_net = 5 - 2 = 3, subtract basketball_court_delta (15), so floor1_delta = -12, clamped to 0
         self.test(
             "Test 11: Basketball + Enter (no Exit)",
             ["hoopcamera", "enter"],
+            expected_results={"basketball_court": 15, "floor1": 0},
             description="Test enter camera providing both in/out when exit is disabled"
         )
         
         # Test 12: Floor 1 + Floor 2 integration
+        # floor1: 5 - 2 = 3, then subtract secondfloor1_in (3) and add secondfloor1_out (1) = 1
+        # floor2: 3 - 1 = 2
         self.test(
             "Test 12: Floor 1 + Floor 2 Integration",
             ["enter", "exit", "secondfloorcam1"],
+            expected_results={"floor1": 1, "floor2": 2},
             description="Test floor1 and floor2 working together"
+        )
+        
+        # Edge case tests
+        self.test(
+            "Test 13: Negative Capacity Clamping",
+            ["basement"],
+            expected_results={"basement": 0},  # 1 (in) - 5 (out) = -4, clamped to 0
+            description="Test that negative capacities are clamped to 0",
+            edge_case="negative_capacity"
+        )
+        
+        # Test 14: Duplicate processing - run same test twice
+        self.test(
+            "Test 14: Duplicate Processing Prevention",
+            ["hoopcamera"],
+            expected_results={"basketball_court": 15},  # First run: 0 -> 15
+            description="Test that same data file is not processed twice (first run)"
+        )
+        
+        # Run again with same data - should not change
+        self.test(
+            "Test 15: Duplicate Processing Prevention (Second Run)",
+            ["hoopcamera"],
+            expected_results={"basketball_court": 15},  # Second run: should still be 15 (no change)
+            description="Test that same data file is not processed twice (second run)"
         )
         
         # Print summary
